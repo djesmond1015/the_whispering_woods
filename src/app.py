@@ -1,4 +1,7 @@
+import uuid, pickle
+
 import os, sys, time
+from pathlib import Path
 
 from dataset import display_menu as dm, scenes
 
@@ -33,6 +36,36 @@ class Printer:
             print()
 
 
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.unique_id = uuid.uuid4().hex[:6]
+
+
+class GameState:
+    def __init__(self, player, state):
+        self.player = player
+        self.current_state = state
+        self.directory = self.create_directory()
+
+    def create_directory(self):
+        pwd = os.getcwd()
+        path = Path(pwd + "/state_manager")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def get_file_path(self):
+        return self.directory / f"{self.unique_id}_{self.player.name}_game_state.pkl"
+
+    def save_game_state(self):
+        with open(self.get_file_path(), "wb") as file:
+            pickle.dump(self, file)
+
+    def load_game_state(self):
+        with open(self.get_file_path(), "rb") as file:
+            return pickle.load(file)
+
+
 class AdventureGameEngine:
     def __init__(self):
         self.START_GAME = "1"
@@ -41,6 +74,7 @@ class AdventureGameEngine:
         self.keep_running = True
         self.current_scene = scenes["enter forest"]
         self.printer = Printer()
+        # self.game_state = GameState()
 
     def clear_screen(self):
         try:
@@ -50,6 +84,15 @@ class AdventureGameEngine:
 
     def display_menu(self, display_menu, time_delay):
         self.printer.print_list_steps(display_menu, time_delay)
+
+    def display_saved_games(self, time_delay):
+        self.printer.print_text_typewriter(
+            "\n[S] - Save and back to menu?\n", time_delay
+        )
+
+    def back_to_menu(self):
+        self.clear_screen()
+        self.display_menu(dm, 0.05)
 
     def print_choices(self, message, time_delay=0.02):
         if type(message) != list:
@@ -85,6 +128,8 @@ class AdventureGameEngine:
             time.sleep(2)
             return
 
+        self.display_saved_games(0.02)
+
         while True:
             if scene["continue"][0] == True:
                 print("\n")
@@ -93,6 +138,10 @@ class AdventureGameEngine:
 
             else:
                 choice = input("Enter your choice: ")
+
+            if choice == "s" or choice == "S":
+                self.back_to_menu()
+                break
 
             valid_choice = self.choice_match(choice, scene)
             if valid_choice:
