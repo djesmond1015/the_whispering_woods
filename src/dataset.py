@@ -24,6 +24,7 @@ scenes = {
             "2": "fireflies",
             "3": "climb hill",
         },
+        "continue": (False, None),
     },
     "echoing whispers": {
         "name": "follow echoing whispers",
@@ -32,6 +33,7 @@ scenes = {
             "Discover ancient marker",
         ],
         "choice": {},
+        "continue": (False, None),
     },
     "fireflies": {
         "name": "fireflies",
@@ -46,16 +48,19 @@ scenes = {
             "1": "ignore melody",
             "2": "follow melody",
         },
+        "continue": (False, None),
     },
     "climb hill": {
         "name": "climb hill",
         "text": ["You climb up the hill"],
         "choice": {},
+        "continue": (False, None),
     },
     "follow melody": {
         "name": "follow melody",
         "text": ["You follow the melody"],
         "choice": {},
+        "continue": (False, None),
     },
     "ignore melody": {
         "name": "ignore melody",
@@ -70,6 +75,7 @@ scenes = {
             "1": "take boat",
             "2": "ignore boat",
         },
+        "continue": (False, None),
     },
     "take boat": {
         "name": "take boat",
@@ -77,6 +83,7 @@ scenes = {
             "You take the boat",
         ],
         "choice": {},
+        "continue": (False, None),
     },
     "ignore boat": {
         "name": "ignore boat",
@@ -84,5 +91,12 @@ scenes = {
             "You ignore the boat",
         ],
         "choice": {},
+        "continue": (True, "exit"),
+    },
+    "exit": {
+        "name": "exit",
+        "text": ["You exit"],
+        "choice": {},
+        "continue": (False, None),
     },
 }

@@ -68,7 +68,9 @@ class AdventureGameEngine:
             decision = scene["choice"][user_choice]
             self.current_scene = scenes[decision]
             self.process_scene(self.current_scene)
-
+        elif user_choice in scene["continue"]:
+            self.current_scene = scenes[user_choice]
+            self.process_scene(self.current_scene)
         else:
             return False
 
@@ -77,13 +79,21 @@ class AdventureGameEngine:
     def process_scene(self, scene):
         self.show_scene(scene, 0.02)
 
-        if scene["choice"] == {} or scene["choice"] == None:
+        if scene["choice"] == {} and scene["continue"][0] == False:
+            self.current_scene = scenes["enter forest"]
             print("You win!")
             time.sleep(2)
             return
 
         while True:
-            choice = input("Enter your choice: ")
+            if scene["continue"][0] == True:
+                print("\n")
+                input("Press enter to continue...")
+                choice = scene["continue"][1]
+
+            else:
+                choice = input("Enter your choice: ")
+
             valid_choice = self.choice_match(choice, scene)
             if valid_choice:
                 break
@@ -118,5 +128,9 @@ class AdventureGameEngine:
 
         while self.keep_running:
             self.process_menu_navigation()
+            # Clear the screen before showing the menu again
             self.clear_screen()
             self.display_menu(dm, 0)
+
+        # Clear the screen after exit the game
+        self.clear_screen()
