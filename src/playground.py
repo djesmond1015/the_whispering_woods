@@ -1,29 +1,30 @@
-import keyboard
-import time
-from src.app import Printer
-
-display_menu = [
-    "\t\tText Adventure Game",
-    "\n",
-    "\t\t1. Start Game",
-    "\t\t2. Load Game",
-    "\t\t3. Exit",
-    "\n",
-]
-
-printer = Printer()
+# class Person:
+#     def __init__(self, name):
+#         self_name = name
 
 
-def print_with_keyboard_blocked(text):
-    keyboard.block_key("*")  # Block all keys
-    printer.print_text_lists_typewriter(text)
-    keyboard.unblock_key("*")  # Unblock all keys
+# class Teen(Person):
+#     def __init__(
+#         self,
+#         name,
+#     ):
+#         super().__init__(name)
+#         self.age = 8
 
 
-def main():
-    print_with_keyboard_blocked(display_menu)
-    time.sleep(2)
-    resault = input("Press enter to continue...")
+# t = Teen("John")
+# print(t.age)
 
 
-main()
+def validate_name(name):
+    has_num = any(type(char) == int for char in name)
+    if len(name) < 6 or has_num:
+        return True
+    return False
+
+
+player_name = ""
+
+while validate_name(player_name):
+    print("Please enter a valid name (at least 6 characters long)")
+    player_name = input("Enter your name: ").strip()

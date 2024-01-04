@@ -43,19 +43,23 @@ class Player:
 
 
 class GameState:
-    def __init__(self, player, state):
+    def __init__(self, player, state, path_name=None):
         self.player = player
         self.current_state = state
-        self.directory = self.create_directory()
+        self.directory = self.create_directory(path_name)
+        # self.time_taken = 0
 
-    def create_directory(self):
+    def create_directory(self, path):
         pwd = os.getcwd()
-        path = Path(pwd + "/state_manager")
+        path = Path(pwd + f"/{path}")
         path.mkdir(parents=True, exist_ok=True)
         return path
 
     def get_file_path(self):
-        return self.directory / f"{self.unique_id}_{self.player.name}_game_state.pkl"
+        return (
+            self.directory
+            / f"{self.player.name}_{self.player.unique_id}_game_state.pkl"
+        )
 
     def save_game_state(self):
         with open(self.get_file_path(), "wb") as file:
@@ -64,6 +68,51 @@ class GameState:
     def load_game_state(self):
         with open(self.get_file_path(), "rb") as file:
             return pickle.load(file)
+
+    def delete_game_state(self):
+        os.remove(self.get_file_path())
+
+
+class TemporaryGameState(GameState):
+    def __init__(self, player, state):
+        path_name = "temporary_state"
+        super().__init__(player, state, path_name)
+
+
+class PermanentGameState(GameState):
+    def __init__(self, player, state):
+        path_name = "permanent_state"
+        self.time_taken = 0
+        super().__init__(player, state, path_name)
+
+
+class GameStatistics:
+    def __init__(self):
+        pass
+
+    def get_time_taken(self):
+        pass
+
+    def get_number_of_scenes(self):
+        pass
+
+    def get_highest_number_of_scenes(self):
+        pass
+
+    def get_lowest_number_of_scenes(self):
+        pass
+
+    def get_average_time_taken(self):
+        pass
+
+    def get_shortest_time_taken(self):
+        pass
+
+    def get_longest_time_taken(self):
+        pass
+
+    def get_number_of_wins(self):
+        pass
 
 
 class AdventureGameEngine:
@@ -74,7 +123,8 @@ class AdventureGameEngine:
         self.keep_running = True
         self.current_scene = scenes["enter forest"]
         self.printer = Printer()
-        # self.game_state = GameState()
+        self.game_state = None
+        self.player = None
 
     def clear_screen(self):
         try:
@@ -93,6 +143,12 @@ class AdventureGameEngine:
     def back_to_menu(self):
         self.clear_screen()
         self.display_menu(dm, 0.05)
+
+    def validate_name(self, name):
+        has_num = any(type(char) == int for char in name)
+        if len(name) < 6 or has_num:
+            return False
+        return True
 
     def print_choices(self, message, time_delay=0.02):
         if type(message) != list:
@@ -121,9 +177,11 @@ class AdventureGameEngine:
 
     def process_scene(self, scene):
         self.show_scene(scene, 0.02)
+        self.game_state.save_game_state()
 
         if scene["choice"] == {} and scene["continue"][0] == False:
             self.current_scene = scenes["enter forest"]
+            # TODO: Delete the saved game state file and add the game state to the permanent file
             print("You win!")
             time.sleep(2)
             return
@@ -156,8 +214,27 @@ class AdventureGameEngine:
 
         match self.menu_choice:
             case self.START_GAME:
+                self.clear_screen()
+                print("Please enter a valid name (at least 6 characters long)")
+                player_name = input("Enter your name: ").strip()
+
+                while not self.validate_name(player_name):
+                    self.clear_screen()
+                    print(
+                        "[Invalid name - name must be at least 6 characters long and cannot contain numbers]"
+                    )
+                    print("\nPlease enter a valid name (at least 6 characters long)")
+                    player_name = input("Enter your name: ").strip()
+
+                initial_scene = self.current_scene
+                self.player = Player(player_name)
+                self.game_state = TemporaryGameState(self.player, initial_scene)
+                self.game_state.save_game_state()
+
+                self.clear_screen()
                 print("Starting game...")
                 time.sleep(2)
+
                 self.process_scene(self.current_scene)
             case self.LOAD_GAME:
                 print("Loading game ...")
