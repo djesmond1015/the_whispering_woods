@@ -1,9 +1,13 @@
-import uuid, pickle
+import uuid
 
 import os, sys, time
-from pathlib import Path
+from datetime import datetime
 
 from dataset import display_menu as dm, scenes
+from utils import destructure as ds
+from adapter import GameStateAdapter
+
+gsa = GameStateAdapter()
 
 
 class Printer:
@@ -42,48 +46,90 @@ class Player:
         self.unique_id = uuid.uuid4().hex[:6]
 
 
-class GameState:
-    def __init__(self, player, state, path_name=None):
-        self.player = player
-        self.current_state = state
-        self.directory = self.create_directory(path_name)
-        # self.time_taken = 0
+# All GameStateController methods:
+# 1. retrieve all data [GET]
+# 3. reset the game (empty the file) [DELETE] (this will never be used)
+# 2. delete all data (delete file) [DELETE] (this will never be used)
 
-    def create_directory(self, path):
-        pwd = os.getcwd()
-        path = Path(pwd + f"/{path}")
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+# 1. retrieve particular data [GET] - (unique_id, player_name)
+# 2. insert or create data [POST] - (player, scene)
+# 3. update data [PUT] - (player, scene)
+# 4. delete data [DELETE] - list of (unique_id, player_name)
 
-    def get_file_path(self):
-        return (
-            self.directory
-            / f"{self.player.name}_{self.player.unique_id}_game_state.pkl"
+
+class GameStateController:
+    def __init__(self):
+        pass
+
+    # Handling all data
+    def retrieve_multiple_data(self, limit=False):
+        if limit:
+            data = gsa.load_game_state()
+            limited_result = gsa.find(data, limit=limit)
+            return limited_result
+        else:
+            data = gsa.load_game_state()
+
+        return data
+
+    def reset_game(self):
+        gsa.save_game_state([])
+
+    def delete_file(self):
+        gsa.delete_game_state()
+
+    # Handling single data
+    def retrieve_data(self, unique_id, player_name):
+        data = gsa.load_game_state()
+
+        condition = (
+            lambda x: x["player_id"] == unique_id and x["player_name"] == player_name
         )
+        result = gsa.find(data, condition=condition)
 
-    def save_game_state(self):
-        with open(self.get_file_path(), "wb") as file:
-            pickle.dump(self, file)
+        return result
 
-    def load_game_state(self):
-        with open(self.get_file_path(), "rb") as file:
-            return pickle.load(file)
+    def create_data(self, player, scene, initial_time):
+        player_id, player_name = ds(player.__dict__, "unique_id", "name")
+        scene_name = scene["name"]
 
-    def delete_game_state(self):
-        os.remove(self.get_file_path())
+        player_list = {
+            "player_id": player_id,
+            "player_name": player_name,
+            "scene_name": scene_name,
+            "start_game": initial_time,
+            "time_taken": "00:00:00",
+        }
+
+        data = gsa.load_game_state()
+        data.append(player_list)
+        gsa.save_game_state(data)
+
+    def update_data(self, unique_id, player_name, new_data):
+        pass
+
+    def delete_data(self, unique_id, player_name):
+        pass
+
+    # Utility methods
+    def calculate_time_taken(self):
+        pass
 
 
-class TemporaryGameState(GameState):
-    def __init__(self, player, state):
-        path_name = "temporary_state"
-        super().__init__(player, state, path_name)
+class LoadGameMenu:
+    def __init__(self):
+        self.exit = "[Q] - Return to menu"
+        self.player_list = []
+        self.load_game_menu = {
+            "player_list": self.player_list,
+            "exit": self.exit,
+        }
 
+    def get_player_list(self):
+        return self.player_list
 
-class PermanentGameState(GameState):
-    def __init__(self, player, state):
-        path_name = "permanent_state"
-        self.time_taken = 0
-        super().__init__(player, state, path_name)
+    def get_exit(self):
+        return self.exit
 
 
 class GameStatistics:
@@ -119,11 +165,12 @@ class AdventureGameEngine:
     def __init__(self):
         self.START_GAME = "1"
         self.LOAD_GAME = "2"
-        self.EXIT_GAME = "3"
+        self.STATISTICS = "3"
+        self.EXIT_GAME = "4"
         self.keep_running = True
-        self.current_scene = scenes["enter forest"]
+        self.initial_time = None
         self.printer = Printer()
-        self.game_state = None
+        self.current_scene = scenes["enter forest"]
         self.player = None
 
     def clear_screen(self):
@@ -139,6 +186,46 @@ class AdventureGameEngine:
         self.printer.print_text_typewriter(
             "\n[S] - Save and back to menu?\n", time_delay
         )
+
+    def display_load_game(self):
+        load_game_menu = LoadGameMenu()
+        player_list = load_game_menu.get_player_list()
+
+        # "player_id": 1,
+        #     "player_name": "John",
+        #     "scene_name": "enter forest",
+        #     "start_game": "2020-12-12 12:12:12",
+        #     "time_taken": "00:00:00",
+        # TODO: Add index to the player list
+        formatted_menu_list = [
+            "\t\tSaved Games",
+            "\n",
+            "\t\tPlayer \t\tScene Name\t\tStart Game\t\tTime Taken",
+            *player_list,
+            "\n",
+            load_game_menu.get_exit(),
+        ]
+
+        self.printer.print_list_once(formatted_menu_list)
+
+    def process_load_game(self):
+        self.clear_screen()
+        self.display_load_game()
+
+        while True:
+            choice = input("Enter game number: ")
+
+            if choice == "q" or choice == "Q":
+                self.back_to_menu()
+                break
+
+            valid_choice = self.choice_match(choice, scene)
+            if valid_choice:
+                break
+            else:
+                self.show_scene(scene)
+                print("\n")
+                print("[Invalid choice]")
 
     def back_to_menu(self):
         self.clear_screen()
@@ -228,8 +315,11 @@ class AdventureGameEngine:
 
                 initial_scene = self.current_scene
                 self.player = Player(player_name)
-                self.game_state = TemporaryGameState(self.player, initial_scene)
-                self.game_state.save_game_state()
+                self.initial_time = datetime.now()
+
+                GameStateController().create_data(
+                    self.player, initial_scene, self.initial_time
+                )
 
                 self.clear_screen()
                 print("Starting game...")
@@ -238,6 +328,9 @@ class AdventureGameEngine:
                 self.process_scene(self.current_scene)
             case self.LOAD_GAME:
                 print("Loading game ...")
+                time.sleep(2)
+            case self.STATISTICS:
+                print("Loading statistics ...")
                 time.sleep(2)
             case self.EXIT_GAME:
                 print("See you next time!")
@@ -251,6 +344,8 @@ class AdventureGameEngine:
     def start_game_engine(self):
         self.clear_screen()
         self.display_menu(dm, 0.05)
+
+        time.sleep(2)
 
         while self.keep_running:
             self.process_menu_navigation()

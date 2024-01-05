@@ -3,10 +3,13 @@ display_menu = [
     "\n",
     "\t\t1. Start Game",
     "\t\t2. Load Game",
-    "\t\t3. Exit",
+    "\t\t3. Statistics",
+    "\t\t4. Exit",
     "\n",
 ]
 
+
+# TODO: Turning scene dictionary into a class in the future
 scenes = {
     "enter forest": {
         "name": "enter forest",
