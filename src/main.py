@@ -11,14 +11,20 @@ def main():
 
 if __name__ == "__main__":
     if config.INITIALIZE_GAME_STATE:
-        from app import GameStatePersistenceWrapper
+        from app import GameStateAdapter
 
-        GameStatePersistenceWrapper().initialize_game_state()
+        GameStateAdapter().initialize_game_state()
         print("Game state initialized")
 
-        initial_game_state = GameStatePersistenceWrapper().load_game_state()
+        initial_game_state = GameStateAdapter().load_game_state()
         print(initial_game_state)
         print("Game state loaded")
+
+    if config.DELETE_PLAYER_GAME_STATE:
+        from app import GameStateAdapter
+
+        GameStateAdapter().delete_game_state()
+        print("Game state file deleted")
 
     main()
 

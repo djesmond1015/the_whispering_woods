@@ -1,21 +1,3 @@
-# class Person:
-#     def __init__(self, name):
-#         self_name = name
-
-
-# class Teen(Person):
-#     def __init__(
-#         self,
-#         name,
-#     ):
-#         super().__init__(name)
-#         self.age = 8
-
-
-# t = Teen("John")
-# print(t.age)
-
-
 # from datetime import datetime
 # import time
 
@@ -84,12 +66,12 @@
 
 
 # All GameStateController methods:
-# A1. retrieve all data [GET]
+# A1. retrieve all or a list of data with limit parameter [GET]
 # A2. reset the game (empty the file) [DELETE] (this will never be used)
 # A3. delete all data (delete file) [DELETE] (this will never be used)
 
 # B1. retrieve particular data [GET] - (unique_id, player_name)
-# B2. insert or create data [POST] - (player, scene)
+# B2. insert or create data [POST] - (player, scene_name)
 # B3. update or replace data [PUT] - (unique_id, player_name, new_data)
 # B4. delete data [DELETE] - list of (unique_id, player_name)
 
@@ -102,14 +84,13 @@
 # delete_game_state
 
 # Load game menu methods:
-# 1. Display list of saved games [A1]
+# 1. Display list of saved games that haven't completed [A1]
 # 2. Load game - (only load the game that is not completed) [B1]
-# 3. Reset game - (delete the game that is completed) [B4]
+# 3. Reset game - delete all list of game that haven't completed [B4]
 
 # AdventureGameEngine methods:
 # initialize_game_state - [B2]
 # save_game - [B3]
 
 
-arr = ["dfd"] * 3
-print(arr)
+# arr = [{"name": "John", "age": 25}]

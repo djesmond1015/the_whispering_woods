@@ -3,8 +3,11 @@ import uuid
 import os, sys, time
 from datetime import datetime
 
-from dataset import display_menu as dm, scenes
-from utils import destructure as ds
+from dataset import display_menu as dm, scenes, WIN_SCENE
+from utils import (
+    destructure as ds,
+    formatted_datetime as fd,
+)
 from adapter import GameStateAdapter
 
 gsa = GameStateAdapter()
@@ -41,9 +44,9 @@ class Printer:
 
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, unique_id=None):
         self.name = name
-        self.unique_id = uuid.uuid4().hex[:6]
+        self.unique_id = unique_id or uuid.uuid4().hex[:6]
 
 
 # All GameStateController methods:
@@ -62,71 +65,178 @@ class GameStateController:
         pass
 
     # Handling all data
-    def retrieve_multiple_data(self, limit=False):
-        if limit:
-            data = gsa.load_game_state()
-            limited_result = gsa.find(data, limit=limit)
-            return limited_result
-        else:
-            data = gsa.load_game_state()
+    def retrieve_multiple_data(self, limit=False, condition=False):
+        try:
+            if limit:
+                data = gsa.load_game_state()
+                limited_result = gsa.find(data, limit=limit)
+                return limited_result
+            elif condition:
+                data = gsa.load_game_state()
+                result = gsa.find(data, condition=condition, limit=False)
+                return result
+            else:
+                data = gsa.load_game_state()
 
-        return data
+            return data
+        except Exception as e:
+            print("[RETRIEVE_ALL_ERROR] - Something went wrong")
+            print(e)
 
     def reset_game(self):
-        gsa.save_game_state([])
+        try:
+            gsa.save_game_state([])
+        except Exception as e:
+            print("[RESET_GAME_ERROR] - Something went wrong")
+            print(e)
 
     def delete_file(self):
-        gsa.delete_game_state()
+        try:
+            gsa.delete_game_state()
+        except Exception as e:
+            print("[DELETE_FILE_ERROR] - Something went wrong")
+            print(e)
 
     # Handling single data
     def retrieve_data(self, unique_id, player_name):
-        data = gsa.load_game_state()
+        try:
+            data = gsa.load_game_state()
 
-        condition = (
-            lambda x: x["player_id"] == unique_id and x["player_name"] == player_name
-        )
-        result = gsa.find(data, condition=condition)
+            condition = (
+                lambda x: x["player_id"] == unique_id
+                and x["player_name"] == player_name
+            )
+            result = gsa.find(data, condition=condition, limit=1)
 
-        return result
+            return result
+        except Exception as e:
+            print("[RETRIEVE_USER_ERROR] - Something went wrong")
+            print(e)
 
-    def create_data(self, player, scene, initial_time):
-        player_id, player_name = ds(player.__dict__, "unique_id", "name")
-        scene_name = scene["name"]
+    def create_data(self, player, initial_time):
+        try:
+            player_id, player_name = ds(player.__dict__, "unique_id", "name")
 
-        player_list = {
-            "player_id": player_id,
-            "player_name": player_name,
-            "scene_name": scene_name,
-            "start_game": initial_time,
-            "time_taken": "00:00:00",
-        }
+            player = {
+                "player_id": player_id,
+                "player_name": player_name,
+                "scene_names": [],
+                "start_game": initial_time,
+                "updated_game": initial_time,
+                "time_taken": "00:00:00",
+            }
 
-        data = gsa.load_game_state()
-        data.append(player_list)
-        gsa.save_game_state(data)
+            data = gsa.load_game_state()
+            data.append(player)
+            gsa.save_game_state(data)
+        except Exception as e:
+            print("[CREATE_USER_ERROR] - Something went wrong")
+            print(e)
 
-    def update_data(self, unique_id, player_name, new_data):
-        pass
+    def update_data(self, unique_id, player_name, scene):
+        try:
+            if not unique_id or not player_name:
+                raise Exception("[UPDATE_USER] - Invalid input")
+
+            print("finding data passed")
+
+            data = gsa.load_game_state()
+            latest_game = datetime.now()
+
+            condition = (
+                lambda x: x["player_id"] == unique_id
+                and x["player_name"] == player_name
+            )
+
+            result = gsa.find(
+                data, condition=condition
+            )  # return the player list with only player dictionary
+            result = result[0]  # return the player dictionary
+
+            if not result:
+                raise Exception("[UPDATE_USER] - No data found")
+
+            print("finding result passed")
+
+            if result["scene_names"]:
+                if result["scene_names"][-1] == scene["name"]:
+                    result["scene_names"].pop()
+
+            updated_player = {
+                **result,
+                "scene_names": [*result["scene_names"], scene["name"]],
+                "updated_game": latest_game,
+                "time_taken": self.calculate_time_taken(
+                    result["updated_game"], latest_game
+                ),
+            }
+
+            print("updating player passed")
+            filtered_data = list(
+                filter(
+                    (
+                        lambda x: x["player_id"] != unique_id
+                        and x["player_name"] != player_name
+                    ),
+                    data,
+                )
+            )
+
+            print("filtering data passed")
+            filtered_data.append(updated_player)
+            print("appending data passed")
+            gsa.save_game_state(filtered_data)
+
+        except Exception as e:
+            print("[UPDATE_USER_ERROR] - Something went wrong")
+            print(e)
 
     def delete_data(self, unique_id, player_name):
         pass
 
     # Utility methods
-    def calculate_time_taken(self):
-        pass
+    def calculate_time_taken(self, old_time, latest_time):
+        time_lapsed = latest_time - old_time
+        total_seconds = time_lapsed.total_seconds()
+
+        hours = int(total_seconds // 3600)  # 3600 seconds in 1 hour
+        minutes = int((total_seconds % 3600) // 60)  # 60 seconds in 1 minute
+        seconds = int(total_seconds % 60)  # 60 seconds in 1 minute
+
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
 class LoadGameMenu:
     def __init__(self):
+        # {
+        #     "player_id": player_id,
+        #     "player_name": player_name,
+        #     "scene_names": [],
+        #     "start_game": initial_time,
+        #     "updated_game": initial_time,
+        #     "time_taken": "00:00:00",
+        # }
+
         self.exit = "[Q] - Return to menu"
-        self.player_list = []
+        self.player_list = self.get_player_list()
         self.load_game_menu = {
             "player_list": self.player_list,
             "exit": self.exit,
         }
 
     def get_player_list(self):
-        return self.player_list
+        condition = lambda x: x["scene_names"][-1] != WIN_SCENE
+
+        players = GameStateController().retrieve_multiple_data(
+            condition=condition
+        )  # retrieve all players with uncompleted games
+
+        # formatting the datetime for each player
+        for player in players:
+            player["start_game"] = fd(player["start_game"])
+            player["updated_game"] = fd(player["updated_game"])
+
+        return players
 
     def get_exit(self):
         return self.exit
@@ -187,43 +297,110 @@ class AdventureGameEngine:
             "\n[S] - Save and back to menu?\n", time_delay
         )
 
-    def display_load_game(self):
-        load_game_menu = LoadGameMenu()
-        player_list = load_game_menu.get_player_list()
+    def display_load_game(self, load_game_menu):
+        player_list, exit = ds(load_game_menu, "player_list", "exit")
 
-        # "player_id": 1,
-        #     "player_name": "John",
-        #     "scene_name": "enter forest",
-        #     "start_game": "2020-12-12 12:12:12",
-        #     "time_taken": "00:00:00",
-        # TODO: Add index to the player list
+        load_data = list(
+            map(
+                lambda x: {
+                    "index": x[0] + 1,
+                    "player_id": x[1]["player_id"],
+                    "player_name": x[1]["player_name"],
+                    "scene_names": x[1]["scene_names"],
+                    "start_game": x[1]["start_game"],
+                    "time_taken": x[1]["time_taken"],
+                },
+                enumerate(player_list),
+            )
+        )
+
         formatted_menu_list = [
             "\t\tSaved Games",
             "\n",
-            "\t\tPlayer \t\tScene Name\t\tStart Game\t\tTime Taken",
-            *player_list,
+            "\tIndex \t\tPlayer \t\tCurrent Scene\t\tStart Game\t\tTime Taken",
+            # print the player list
+            *map(
+                lambda x: f"\t{x['index']}\t\t{x['player_name']}\t{x['scene_names'][-1]}\t\t{x['start_game']}\t{x['time_taken']}",
+                load_data,
+            ),
             "\n",
-            load_game_menu.get_exit(),
+            exit,
         ]
 
         self.printer.print_list_once(formatted_menu_list)
 
+        return load_data
+
     def process_load_game(self):
         self.clear_screen()
-        self.display_load_game()
+
+        load_game_menu = LoadGameMenu()
+        load_game_menu = load_game_menu.load_game_menu
+
+        # self.load_game_menu = {
+        #     "player_list": self.player_list,
+        #     "exit": self.exit,
+        # }
+        # {
+        #     "player_id": player_id,
+        #     "player_name": player_name,
+        #     "scene_names": [],
+        #     "start_game": initial_time,
+        #     "updated_game": initial_time,
+        #     "time_taken": "00:00:00",
+        # }
+
+        load_data = self.display_load_game(load_game_menu)
+
+        player_list = load_game_menu["player_list"]
+
+        last_scenes = list(map(lambda x: x["scene_names"][-1], player_list))
 
         while True:
-            choice = input("Enter game number: ")
+            choice = input("Enter game number: ").strip()
 
             if choice == "q" or choice == "Q":
                 self.back_to_menu()
+
                 break
 
-            valid_choice = self.choice_match(choice, scene)
-            if valid_choice:
+            if int(choice) in range(1, len(last_scenes) + 1):
+                formatted_choice = int(choice) - 1
+
+                selected_scene = last_scenes[formatted_choice]
+
+                scene = scenes[selected_scene]
+
+                load_game_choice = int(choice)
+                load_game_object = load_data[load_game_choice - 1]
+
+                # get the player from the player_list using player_name and player_id from the load_game_object
+                load_player = list(
+                    filter(
+                        lambda x: x["player_id"] == load_game_object["player_id"]
+                        and x["player_name"] == load_game_object["player_name"],
+                        player_list,
+                    )
+                )[0]
+
+                print("player", load_player)
+                time.sleep(5)
+
+                self.player = Player(
+                    load_player["player_name"], load_player["player_id"]
+                )
+
+                print("Loading game ...")
+                time.sleep(2)
+
+                self.process_scene(scene)
+
                 break
+
             else:
-                self.show_scene(scene)
+                self.clear_screen()
+                self.display_load_game(load_game_menu)
+
                 print("\n")
                 print("[Invalid choice]")
 
@@ -264,13 +441,30 @@ class AdventureGameEngine:
 
     def process_scene(self, scene):
         self.show_scene(scene, 0.02)
-        self.game_state.save_game_state()
+        GameStateController().update_data(
+            self.player.unique_id, self.player.name, scene
+        )
+
+        result = GameStateController().retrieve_data(
+            self.player.unique_id, self.player.name
+        )
+
+        print(result)
+        time.sleep(10)
 
         if scene["choice"] == {} and scene["continue"][0] == False:
             self.current_scene = scenes["enter forest"]
-            # TODO: Delete the saved game state file and add the game state to the permanent file
+
+            GameStateController().update_data(
+                self.player.unique_id, self.player.name, {"name": WIN_SCENE}
+            )
+
+            result = GameStateController().retrieve_data(
+                self.player.unique_id, self.player.name
+            )
+            print(result)
             print("You win!")
-            time.sleep(2)
+            time.sleep(10)
             return
 
         self.display_saved_games(0.02)
@@ -313,13 +507,18 @@ class AdventureGameEngine:
                     print("\nPlease enter a valid name (at least 6 characters long)")
                     player_name = input("Enter your name: ").strip()
 
-                initial_scene = self.current_scene
+                # initial_scene = self.current_scene
                 self.player = Player(player_name)
                 self.initial_time = datetime.now()
 
-                GameStateController().create_data(
-                    self.player, initial_scene, self.initial_time
+                GameStateController().create_data(self.player, self.initial_time)
+
+                response = GameStateController().retrieve_data(
+                    self.player.unique_id,
+                    self.player.name,
                 )
+                print(response)
+                time.sleep(10)
 
                 self.clear_screen()
                 print("Starting game...")
@@ -327,8 +526,8 @@ class AdventureGameEngine:
 
                 self.process_scene(self.current_scene)
             case self.LOAD_GAME:
-                print("Loading game ...")
-                time.sleep(2)
+                self.process_load_game()
+
             case self.STATISTICS:
                 print("Loading statistics ...")
                 time.sleep(2)
@@ -344,8 +543,6 @@ class AdventureGameEngine:
     def start_game_engine(self):
         self.clear_screen()
         self.display_menu(dm, 0.05)
-
-        time.sleep(2)
 
         while self.keep_running:
             self.process_menu_navigation()

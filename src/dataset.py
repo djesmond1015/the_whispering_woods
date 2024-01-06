@@ -8,6 +8,7 @@ display_menu = [
     "\n",
 ]
 
+WIN_SCENE = "Escape woods"
 
 # TODO: Turning scene dictionary into a class in the future
 scenes = {
