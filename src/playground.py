@@ -91,24 +91,3 @@
 # AdventureGameEngine methods:
 # initialize_game_state - [B2]
 # save_game - [B3]
-
-
-arr_1 = [{"name": "John", "age": 25}, {"name": "Mary", "age": 30}]
-
-arr_2 = [
-    {"name": "John", "age": 25},
-    {"name": "Mary", "age": 30},
-    {"name": "Peter", "age": 35},
-]
-
-# Filter arr_2 from arr_1 based on name and age
-result = list(
-    filter(
-        lambda x: x["name"] not in [y["name"] for y in arr_1]
-        and x["age"] not in [y["age"] for y in arr_1],
-        arr_2,
-    )
-)
-
-# result = list(filter(lambda x: x["name"] not in [y["name"] for y in arr_1], arr_2))
-print(result)

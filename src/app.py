@@ -131,7 +131,8 @@ class GameStateController:
             if not unique_id or not player_name:
                 raise Exception("[UPDATE_USER] - Invalid input")
 
-            print("finding data passed")
+            if DEBUG:
+                print("finding data passed")
 
             data = gsa.load_game_state()
             latest_game = datetime.now()
@@ -193,13 +194,21 @@ class GameStateController:
 
     def delete_all_load_games(self, player_list):
         try:
-            self.reset_game()
-
             data = gsa.load_game_state()
 
-            data = [*player_list]
+            filtered_data = list(
+                filter(
+                    lambda x: x["player_name"]
+                    not in [player["player_name"] for player in player_list]
+                    and x["player_id"]
+                    not in [player["player_name"] for player in player_list],
+                    data,
+                )
+            )
 
-            gsa.save_game_state(data)
+            self.reset_game()
+
+            gsa.save_game_state(filtered_data)
 
         except Exception as e:
             print("[DELETE_USER_ERROR] - Something went wrong")
@@ -326,7 +335,7 @@ class AdventureGameEngine:
             "\tIndex \t\tPlayer \t\tCurrent Scene\t\tStart Game\t\tTime Taken",
             # print the player list
             *map(
-                lambda x: f"\t{x['index']}\t\t{x['player_name']}\t{x['scene_names'][-1]}\t\t{x['start_game']}\t{x['time_taken']}",
+                lambda x: f"\t{x['index']}\t\t{x['player_name']}\t{x['scene_names'][-1]}\t{x['start_game']}\t{x['time_taken']}",
                 load_data,
             ),
             "\n",
@@ -359,12 +368,22 @@ class AdventureGameEngine:
                 break
 
             elif choice == "r" or choice == "R":
-                # Filter player_list based on the
-                self.reset_game(player_list)
+                GameStateController().delete_all_load_games(player_list)
+
+                self.clear_screen()
+                print("Resetting game ...")
+                time.sleep(2)
+
+                self.back_to_menu()
 
                 break
 
-            if int(choice) in range(1, len(last_scenes) + 1):
+            try:
+                is_valid_choice = any(int(choice) in range(1, len(last_scenes) + 1))
+
+                if not is_valid_choice:
+                    raise ValueError
+
                 formatted_choice = int(choice) - 1
 
                 selected_scene = last_scenes[formatted_choice]
@@ -374,7 +393,6 @@ class AdventureGameEngine:
                 load_game_choice = int(choice)
                 load_game_object = load_data[load_game_choice - 1]
 
-                # get the player from the player_list using player_name and player_id from the load_game_object
                 load_player = list(
                     filter(
                         lambda x: x["player_id"] == load_game_object["player_id"]
@@ -387,6 +405,7 @@ class AdventureGameEngine:
                     load_player["player_name"], load_player["player_id"]
                 )
 
+                self.clear_screen()
                 print("Loading game ...")
                 time.sleep(2)
 
@@ -394,33 +413,12 @@ class AdventureGameEngine:
 
                 break
 
-            else:
+            except ValueError:
                 self.clear_screen()
                 self.display_load_game(load_game_menu)
 
                 print("\n")
                 print("[Invalid choice]")
-
-    def reset_game(self, player_list):
-        self.clear_screen()
-        data = GameStateController().retrieve_multiple_data()
-
-        filtered_player_list = list(
-            filter(
-                lambda x: x["player_name"]
-                not in [player["player_name"] for player in player_list]
-                and x["player_id"]
-                not in [player["player_id"] for player in player_list],
-                data,
-            ),
-        )
-
-        GameStateController().delete_all_load_games(filtered_player_list)
-
-        print("Resetting game ...")
-        time.sleep(2)
-
-        self.back_to_menu()
 
     def back_to_menu(self):
         self.clear_screen()
@@ -481,19 +479,20 @@ class AdventureGameEngine:
             result = GameStateController().retrieve_data(
                 self.player.unique_id, self.player.name
             )
-            # print(result)
+
             print("You win!")
             time.sleep(2)
             return
 
-        self.display_saved_games(0.02)
-
         while True:
+            print("\n")
+            self.display_saved_games(0.02)
+
             if scene["continue"][0] == True:
                 print("\n")
-                input("Press enter to continue...")
-                choice = scene["continue"][1]
+                is_save_and_back_to_menu = input("Press enter to continue...")
 
+                choice = is_save_and_back_to_menu or scene["continue"][1]
             else:
                 choice = input("Enter your choice: ").strip()
 
@@ -516,17 +515,23 @@ class AdventureGameEngine:
             case self.START_GAME:
                 self.clear_screen()
                 print("Please enter a valid name (at least 6 characters long)")
+                print("\n[Q] - Return to menu")
                 player_name = input("Enter your name: ").strip()
 
                 while not self.validate_name(player_name):
+                    if player_name == "q" or player_name == "Q":
+                        self.back_to_menu()
+                        return
+
                     self.clear_screen()
+
                     print(
                         "[Invalid name - name must be at least 6 characters long and cannot contain numbers]"
                     )
                     print("\nPlease enter a valid name (at least 6 characters long)")
+                    print("\n[Q] - Return to menu")
                     player_name = input("Enter your name: ").strip()
 
-                # initial_scene = self.current_scene
                 self.player = Player(player_name)
                 self.initial_time = datetime.now()
 
