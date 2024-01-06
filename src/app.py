@@ -1,13 +1,17 @@
+# Importing external modules
 import uuid
 
+# Importing built-in modules
 import os, sys, time
 from datetime import datetime
 
+# Importing local modules
 from dataset import display_menu as dm, scenes, WIN_SCENE
 from utils import (
     destructure as ds,
     formatted_datetime as fd,
 )
+from config import DEBUG
 from adapter import GameStateAdapter
 
 gsa = GameStateAdapter()
@@ -47,17 +51,6 @@ class Player:
     def __init__(self, name, unique_id=None):
         self.name = name
         self.unique_id = unique_id or uuid.uuid4().hex[:6]
-
-
-# All GameStateController methods:
-# 1. retrieve all data [GET]
-# 3. reset the game (empty the file) [DELETE] (this will never be used)
-# 2. delete all data (delete file) [DELETE] (this will never be used)
-
-# 1. retrieve particular data [GET] - (unique_id, player_name)
-# 2. insert or create data [POST] - (player, scene)
-# 3. update data [PUT] - (player, scene)
-# 4. delete data [DELETE] - list of (unique_id, player_name)
 
 
 class GameStateController:
@@ -156,7 +149,8 @@ class GameStateController:
             if not result:
                 raise Exception("[UPDATE_USER] - No data found")
 
-            print("finding result passed")
+            if DEBUG:
+                print("finding result passed")
 
             if result["scene_names"]:
                 if result["scene_names"][-1] == scene["name"]:
@@ -170,8 +164,9 @@ class GameStateController:
                     result["updated_game"], latest_game
                 ),
             }
+            if DEBUG:
+                print("updating player passed")
 
-            print("updating player passed")
             filtered_data = list(
                 filter(
                     (
@@ -182,9 +177,14 @@ class GameStateController:
                 )
             )
 
-            print("filtering data passed")
+            if DEBUG:
+                print("filtering data passed")
+
             filtered_data.append(updated_player)
-            print("appending data passed")
+
+            if DEBUG:
+                print("appending data passed")
+
             gsa.save_game_state(filtered_data)
 
         except Exception as e:
@@ -219,15 +219,6 @@ class GameStateController:
 
 class LoadGameMenu:
     def __init__(self):
-        # {
-        #     "player_id": player_id,
-        #     "player_name": player_name,
-        #     "scene_names": [],
-        #     "start_game": initial_time,
-        #     "updated_game": initial_time,
-        #     "time_taken": "00:00:00",
-        # }
-
         self.exit = "[Q] - Return to menu"
         self.reset_game = "[R] - Reset game"
         self.player_list = self.get_player_list()
@@ -476,8 +467,9 @@ class AdventureGameEngine:
             self.player.unique_id, self.player.name
         )
 
-        # print(result)
-        # time.sleep(10)
+        if DEBUG:
+            print(result)
+            time.sleep(10)
 
         if scene["choice"] == {} and scene["continue"][0] == False:
             self.current_scene = scenes["enter forest"]
@@ -544,8 +536,10 @@ class AdventureGameEngine:
                     self.player.unique_id,
                     self.player.name,
                 )
-                # print(response)
-                # time.sleep(10)
+
+                if DEBUG:
+                    print(response)
+                    time.sleep(10)
 
                 self.clear_screen()
                 print("Starting game...")
