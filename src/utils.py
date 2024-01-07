@@ -1,5 +1,5 @@
-def destructure(array, *keys):
-    return [array[k] if k in array else None for k in keys]
+def destructure(dictionary, *keys):
+    return [dictionary[k] if k in dictionary else None for k in keys]
 
 
 def formatted_datetime(datetime_obj):

@@ -36,14 +36,22 @@ class GameStateAdapter:
     # Utility functions
     def find(self, iterable, default=None, condition=lambda x: True, limit=None):
         try:
+            # Find only one item
             if limit == 1:
                 return next(x for x in iterable if condition(x))
+            # Find all items
             elif limit is False:
                 return [x for x in iterable if condition(x)]
+            # Find n items
             else:
                 return [x for x in iterable if condition(x)][:limit]
         except StopIteration:
+            # Return default value if condition is not met
             if default is not None and condition(default):
                 return default
+            # Raise error if default value is not provided
             else:
                 raise
+
+
+# TODO: add more adapters to support other external data sources such as json, csv, etc. Add the config to the config file.
