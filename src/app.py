@@ -73,26 +73,30 @@ class LoadGameMenu:
     def __init__(self):
         self.exit = "[Q] - Return to menu"
         self.reset_game = "[R] - Reset game"
-        self.player_list = self.get_player_list()
+        self.game_list = self.get_game_list()
         self.load_game_menu = {
-            "player_list": self.player_list,
+            "game_list": self.game_list,
             "reset_game": self.reset_game,
             "exit": self.exit,
         }
 
-    def get_player_list(self):
+    def get_game_list(self):
         condition = lambda x: x["scene_names"][-1] != WIN_SCENE
 
-        players = GameStateController().retrieve_multiple_data(
+        game_list = GameStateController().retrieve_multiple_data(
             condition=condition
         )  # retrieve all players with uncompleted games
 
         # formatting the datetime for each player
-        for player in players:
-            player["start_game"] = fd(player["start_game"])
-            player["updated_game"] = fd(player["updated_game"])
+        for game in game_list:
+            game["start_game"] = fd(game["start_game"])
+            game["updated_game"] = fd(game["updated_game"])
 
-        return players
+        if DEBUG:
+            print(game_list)
+            time.sleep(10)
+
+        return game_list
 
     def get_exit(self):
         return self.exit
@@ -103,10 +107,19 @@ class AdventureGameEngine:
         self.keep_running = True
         self.initial_time = None
         self.printer = Printer()
-        self.current_scene = scenes["enter forest"]
+        self.current_scene = self.get_scene("enter forest")
         self.player = None
         self.main_menu = GameMainMenu()
         self.load_game_menu = LoadGameMenu()
+
+    # Private methods
+    def get_scene(self, scene_name):
+        try:
+            return list(filter(lambda x: x["name"] == scene_name, scenes))[0]
+        except IndexError as e:
+            print("[GET_SCENE_ERROR] - Invalid scene name")
+            print(e)
+            return
 
     # Utility methods
     def validate_name(self, name):
@@ -143,25 +156,7 @@ class AdventureGameEngine:
         else:
             self.printer.print_text_lists_typewriter(scene_text, time_delay)
 
-    def display_load_game(self, load_game_menu):
-        player_list, exit, reset_game = ds(
-            load_game_menu, "player_list", "reset_game", "exit"
-        )
-
-        load_data = list(
-            map(
-                lambda x: {
-                    "index": x[0] + 1,
-                    "player_id": x[1]["player_id"],
-                    "player_name": x[1]["player_name"],
-                    "scene_names": x[1]["scene_names"],
-                    "start_game": x[1]["start_game"],
-                    "time_taken": x[1]["time_taken"],
-                },
-                enumerate(player_list),
-            )
-        )
-
+    def display_load_game(self, formatted_game_list, exit_text, reset_game):
         formatted_menu_list = [
             "\t\tSaved Games",
             "\n",
@@ -169,16 +164,14 @@ class AdventureGameEngine:
             # print the player list
             *map(
                 lambda x: f"\t{x['index']}\t\t{x['player_name']}\t{x['scene_names'][-1]}\t{x['start_game']}\t{x['time_taken']}",
-                load_data,
+                formatted_game_list,
             ),
             "\n",
             reset_game,
-            exit,
+            exit_text,
         ]
 
         self.printer.print_list_once(formatted_menu_list)
-
-        return load_data
 
     # Business logic methods
     def back_to_menu(self):
@@ -220,12 +213,12 @@ class AdventureGameEngine:
         if user_choice in scene["choice"]:
             decision = scene["choice"][user_choice]
 
-            self.current_scene = scenes[decision]
+            self.current_scene = self.get_scene(decision)
             self.process_scene(self.current_scene)
 
         # If the choice is in the continue list(one choice case), continue to the next scene
         elif user_choice in scene["continue"]:
-            self.current_scene = scenes[user_choice]
+            self.current_scene = self.get_scene(user_choice)
             self.process_scene(self.current_scene)
         # If the choice is not in the choice list, the choice is invalidate, return False
         else:
@@ -255,7 +248,7 @@ class AdventureGameEngine:
         # If the game is completed and the player win, save the game state and reset the game scene
         # return
         if self.is_game_completed(scene):
-            self.current_scene = scenes["enter forest"]
+            self.current_scene = self.get_scene("enter forest")
 
             GameStateController().update_data(
                 self.player.unique_id, self.player.name, {"name": WIN_SCENE}
@@ -300,11 +293,11 @@ class AdventureGameEngine:
             if is_valid_choice:
                 break
             else:
-                self.display_scene(scene)
+                self.display_scene(scene, 0)
                 print("\n")
                 print("[Invalid choice]")
 
-    # The process_load_game and format_saved_game_list methods are two methods that are tightly coupled together to handle the load game feature. The main method is the process_load_game method, while the other method is a helper method.
+    # # The process_load_game and format_saved_game_list methods are two methods that are tightly coupled together to handle the load game feature. The main method is the process_load_game method, while the other method is a helper method.
     def format_saved_game_list(self, game_list):
         formatted_game_list = list(
             map(
@@ -328,16 +321,16 @@ class AdventureGameEngine:
         # Get the raw data from the load_game_menu
         game_menu_data = self.load_game_menu.load_game_menu
 
-        player_list, exit, reset_game = ds(
-            game_menu_data, "player_list", "reset_game", "exit"
+        game_list, exit, reset_game = ds(
+            game_menu_data, "game_list", "reset_game", "exit"
         )
 
         # Format the player list from the raw data before displaying the load game menu
-        formatted_game_list = self.format_saved_game_list(player_list)
-        load_data = self.display_load_game(formatted_game_list, exit, reset_game)
+        formatted_game_list = self.format_saved_game_list(game_list)
+        self.display_load_game(formatted_game_list, exit, reset_game)
 
         # Get the last scene of each player
-        last_scenes = list(map(lambda x: x["scene_names"][-1], player_list))
+        last_scenes = list(map(lambda x: x["scene_names"][-1], game_list))
 
         while True:
             choice = input("Enter game number: ").strip()
@@ -346,10 +339,10 @@ class AdventureGameEngine:
             if choice == "q" or choice == "Q":
                 self.back_to_menu()
 
-                break
+                return
 
             elif choice == "r" or choice == "R":
-                GameStateController().delete_all_load_games(player_list)
+                GameStateController().delete_all_load_games(game_list)
 
                 self.clear_screen()
                 print("Resetting game ...")
@@ -357,11 +350,11 @@ class AdventureGameEngine:
 
                 self.back_to_menu()
 
-                break
+                return
 
             # Check if the choice is valid, if not, show the load game menu again and print invalid choice message
             try:
-                is_valid_choice = any(int(choice) in range(1, len(last_scenes) + 1))
+                is_valid_choice = int(choice) in range(1, len(last_scenes) + 1)
 
                 if not is_valid_choice:
                     raise ValueError
@@ -376,10 +369,10 @@ class AdventureGameEngine:
                 ]  # get the last scene of the selected game
 
                 # Get the load scene and return it to the main menu controller
-                load_scene = scenes[selected_scene]
+                load_scene = self.get_scene(selected_scene)
 
                 load_game_choice = int(choice)  # User choice
-                load_game_dictionary = load_data[
+                load_game_dictionary = formatted_game_list[
                     load_game_choice - 1
                 ]  # Get the load game dictionary from the load data based on the user choice
 
@@ -388,7 +381,7 @@ class AdventureGameEngine:
                     filter(
                         lambda x: x["player_id"] == load_game_dictionary["player_id"]
                         and x["player_name"] == load_game_dictionary["player_name"],
-                        player_list,
+                        game_list,
                     )
                 )[0]
 
@@ -396,6 +389,10 @@ class AdventureGameEngine:
                 self.player = Player(
                     load_player["player_name"], load_player["player_id"]
                 )
+
+                self.clear_screen()
+                print("Loading game ...")
+                time.sleep(2)
 
                 return load_scene
 
@@ -416,6 +413,9 @@ class AdventureGameEngine:
 
                 # User registration
                 player_name = self.register_player()
+
+                if not player_name:
+                    return
 
                 # Initialize game state
                 self.player = Player(player_name)
@@ -440,9 +440,8 @@ class AdventureGameEngine:
             case self.main_menu.LOAD_GAME:
                 load_scene = self.process_load_game()
 
-                self.clear_screen()
-                print("Loading game ...")
-                time.sleep(2)
+                if not load_scene:
+                    return
 
                 self.process_scene(load_scene)
 

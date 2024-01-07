@@ -1,4 +1,4 @@
-from configurations import *
+from configurations import handle_config
 
 from app import AdventureGameEngine
 

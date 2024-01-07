@@ -1,8 +1,8 @@
-import datetime
+from datetime import datetime
 
 from settings import DEBUG
 from adapters import GameStateAdapter
-from utils import ds
+from utils import destructure as ds
 
 gsa = GameStateAdapter()
 
@@ -11,6 +11,7 @@ class GameStateController:
     def __init__(self):
         self.data = gsa.load_game_state() if gsa else None
 
+    # Private methods
     def _handle_exception(self, error_flag: str, e: Exception, message: str = None):
         print(f'[{error_flag}] - {message or 'Something went wrong'}')
         print(e)

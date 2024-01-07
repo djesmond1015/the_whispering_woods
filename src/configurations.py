@@ -3,7 +3,7 @@ import settings
 
 def handle_config():
     if settings.INITIALIZE_GAME_STATE:
-        from app import GameStateAdapter
+        from adapters import GameStateAdapter
 
         GameStateAdapter().initialize_game_state()
         print("Game state initialized")
@@ -13,7 +13,7 @@ def handle_config():
         print("Game state loaded")
 
     if settings.DELETE_PLAYER_GAME_STATE:
-        from app import GameStateAdapter
+        from adapters import GameStateAdapter
 
         GameStateAdapter().delete_game_state()
         print("Game state file deleted")
