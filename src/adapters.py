@@ -41,7 +41,12 @@ class GameStateAdapter:
                 return next(x for x in iterable if condition(x))
             # Find all items
             elif limit is False:
-                return [x for x in iterable if condition(x)]
+                import time
+
+                data = [x for x in iterable if condition(x)]
+                print("from find", data)
+                # time.sleep(5)
+                return data
             # Find n items
             else:
                 return [x for x in iterable if condition(x)][:limit]

@@ -81,20 +81,31 @@ class LoadGameMenu:
         }
 
     def get_game_list(self):
-        condition = lambda x: x["scene_names"][-1] != WIN_SCENE
+        # the condition have issue because something the x['scene_names'] dict might be empty
+        def condition(x):
+            if x == []:
+                return False
+            else:
+                return x["scene_names"][-1] != WIN_SCENE
+
+        # condition = lambda x: x["scene_names"][-1] != WIN_SCENE
+        # condition = (
+        #     lambda x: x["scene_names"][-1] != WIN_SCENE or len(x["scene_names"]) == 0
+        # )
 
         game_list = GameStateController().retrieve_multiple_data(
             condition=condition
         )  # retrieve all players with uncompleted games
-
+        print("from game_list", game_list)
         # formatting the datetime for each player
+
         for game in game_list:
             game["start_game"] = fd(game["start_game"])
             game["updated_game"] = fd(game["updated_game"])
 
         if DEBUG:
             print(game_list)
-            time.sleep(10)
+            # time.sleep(10)
 
         return game_list
 
@@ -110,7 +121,8 @@ class AdventureGameEngine:
         self.current_scene = self.get_scene("enter forest")
         self.player = None
         self.main_menu = GameMainMenu()
-        self.load_game_menu = LoadGameMenu()
+        self.main_menu_choice = None
+        self.load_game_menu = None
 
     # Private methods
     def get_scene(self, scene_name):
@@ -124,7 +136,7 @@ class AdventureGameEngine:
     # Utility methods
     def validate_name(self, name):
         # validate name - name must be at least 6 characters long and cannot contain numbers
-        has_num = any(type(char) == int for char in name)
+        has_num = list(filter(lambda x: x.isdigit(), name))
         if len(name) < 6 or has_num:
             return False
         return True
@@ -194,6 +206,7 @@ class AdventureGameEngine:
             if player_name == "q" or player_name == "Q":
                 self.back_to_menu()
                 return
+                # break
 
             self.clear_screen()
 
@@ -201,7 +214,7 @@ class AdventureGameEngine:
                 "[Invalid name - name must be at least 6 characters long and cannot contain numbers]"
             )
 
-            self.handle_player_name_input()
+            player_name = self.handle_player_name_input()
 
         return player_name
 
@@ -243,7 +256,7 @@ class AdventureGameEngine:
                 self.player.unique_id, self.player.name
             )
             print(result)
-            time.sleep(10)
+            # time.sleep(10)
 
         # If the game is completed and the player win, save the game state and reset the game scene
         # return
@@ -259,7 +272,7 @@ class AdventureGameEngine:
                     self.player.unique_id, self.player.name
                 )
                 print(result)
-                time.sleep(10)
+                # time.sleep(10)
 
             print("You win!")
             time.sleep(2)
@@ -317,6 +330,7 @@ class AdventureGameEngine:
 
     def process_load_game(self):
         self.clear_screen()
+        self.load_game_menu = LoadGameMenu()
 
         # Get the raw data from the load_game_menu
         game_menu_data = self.load_game_menu.load_game_menu
@@ -405,15 +419,16 @@ class AdventureGameEngine:
 
     # Game Engine Local Controller methods
     def main_menu_controller(self):
-        self.menu_choice = input("Enter your choice: ").strip()
+        self.main_menu_choice = input("Enter your choice: ").strip()
 
-        match self.menu_choice:
+        match self.main_menu_choice:
             case self.main_menu.START_GAME:
                 self.clear_screen()
 
                 # User registration
                 player_name = self.register_player()
 
+                # If player enter q or Q, return to menu
                 if not player_name:
                     return
 
@@ -429,7 +444,7 @@ class AdventureGameEngine:
                         self.player.name,
                     )
                     print(response)
-                    time.sleep(10)
+                    # time.sleep(10)
 
                 self.clear_screen()
                 print("Starting game...")
@@ -440,6 +455,7 @@ class AdventureGameEngine:
             case self.main_menu.LOAD_GAME:
                 load_scene = self.process_load_game()
 
+                # If load_scene is None, return to menu
                 if not load_scene:
                     return
 

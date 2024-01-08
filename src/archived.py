@@ -72,3 +72,14 @@ class PermanentGameState(GameState):
     def __init__(self, player, state):
         path_name = "permanent_state"
         super().__init__(player, state, path_name)
+
+
+def calculate_time_taken(self, old_time, latest_time):
+    time_lapsed = latest_time - old_time
+    total_seconds = time_lapsed.total_seconds()
+
+    hours = int(total_seconds // 3600)  # 3600 seconds in 1 hour
+    minutes = int((total_seconds % 3600) // 60)  # 60 seconds in 1 minute
+    seconds = int(total_seconds % 60)  # 60 seconds in 1 minute
+
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"

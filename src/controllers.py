@@ -1,4 +1,6 @@
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
+
 
 from settings import DEBUG
 from adapters import GameStateAdapter
@@ -10,6 +12,10 @@ gsa = GameStateAdapter()
 class GameStateController:
     def __init__(self):
         self.data = gsa.load_game_state() if gsa else None
+        # print(self.data)
+        # time.sleep(5)
+        # lambda x: x["scene_names"][-1] != WIN_SCENE
+        # [{'player_id': 'eae476', 'player_name': 'sddfdfgdf', 'scene_names': ['enter forest', 'fireflies', 'ignore melody', 'ignore boat', 'exit', 'Escape woods'], 'start_game': datetime.datetime(2024, 1, 7, 21, 35, 6, 129931), 'updated_game': datetime.datetime(2024, 1, 7, 21, 44, 23, 103227), 'time_taken': '00:00:00'}, {'player_id': 'dfea1e', 'player_name': 'q', 'scene_names': [], 'start_game': datetime.datetime(2024, 1, 8, 9, 36, 51, 530456), 'updated_game': datetime.datetime(2024, 1, 8, 9, 36, 51, 530456), 'time_taken': '00:00:00'}]
 
     # Private methods
     def _handle_exception(self, error_flag: str, e: Exception, message: str = None):
@@ -17,19 +23,19 @@ class GameStateController:
         print(e)
 
     # Handling multiple data
-    def retrieve_multiple_data(self, limit=False, condition=False):
+    def retrieve_multiple_data(self, condition=None, limit=False):
         try:
             if limit:
                 limited_result = gsa.find(self.data, limit=limit)
                 return limited_result
             elif condition:
-                result = gsa.find(self.data, condition=condition, limit=False)
+                result = gsa.find(self.data, limit, condition=condition)
                 return result
             else:
                 return self.data
             
         except Exception as e:
-            self._handle_exception("RETRIEVE_ALL_ERROR", e)
+            self._handle_exception("RETRIEVE_MULTIPLE_ERROR", e)
 
     def reset_game(self):
         try:
@@ -42,6 +48,7 @@ class GameStateController:
             gsa.delete_game_state()
         except Exception as e:
             self._handle_exception("DELETE_FILE_ERROR", e)
+            
     # Handling single data
     def retrieve_data(self, unique_id, player_name):
         try:
@@ -108,7 +115,7 @@ class GameStateController:
                 "scene_names": [*result["scene_names"], scene["name"]],
                 "updated_game": latest_game,
                 "time_taken": self.calculate_time_taken(
-                    result["updated_game"], latest_game
+                    result["updated_game"], latest_game, result["time_taken"]
                 ),
             }
 
@@ -137,6 +144,7 @@ class GameStateController:
 
         except Exception as e:
             self._handle_exception("UPDATE_USER_ERROR", e)
+
     def delete_all_load_games(self, player_list):
         try:
             filtered_data = list(
@@ -157,15 +165,20 @@ class GameStateController:
             self._handle_exception("DELETE_USER_ERROR", e)
 
     # Utility methods
-    def calculate_time_taken(self, old_time, latest_time):
-        time_lapsed = latest_time - old_time
-        total_seconds = time_lapsed.total_seconds()
+    def calculate_time_taken(self, old_time, latest_time, previous_time_line = "00:00:00"):
+        hours, minutes, seconds = map(int, previous_time_line.split(":"))
+        time_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+        
 
-        hours = int(total_seconds // 3600)  # 3600 seconds in 1 hour
-        minutes = int((total_seconds % 3600) // 60)  # 60 seconds in 1 minute
-        seconds = int(total_seconds % 60)  # 60 seconds in 1 minute
+        time_lapsed = (latest_time - old_time) + time_delta
 
-        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        new_hours = time_lapsed.seconds // 3600
+        new_minutes = (time_lapsed.seconds % 3600) // 60
+        new_seconds = time_lapsed.seconds % 60
+
+        formatted_time = f"{new_hours:02}:{new_minutes:02}:{new_seconds:02}"
+
+        return formatted_time
 
 
 
