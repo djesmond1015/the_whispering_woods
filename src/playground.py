@@ -76,36 +76,3 @@ import time
 #     "updated_game": datetime.datetime(2024, 1, 8, 15, 10, 53, 151528),
 #     "time_taken": "00:00:15",
 # }
-# Game_win time_taken = 00:00:00
-
-
-from datetime import datetime, timedelta
-import time
-
-
-def time_taken(initial_time, late_time, previous_time_line):
-    # Convert string to timedelta
-    hours, minutes, seconds = map(int, previous_time_line.split(":"))
-    time_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-
-    # Calculate time difference
-    new_time = (late_time - initial_time) + time_delta
-
-    # Format the result
-    hours = new_time.seconds // 3600
-    minutes = (new_time.seconds % 3600) // 60
-    seconds = new_time.seconds % 60
-    formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}"
-
-    return formatted_time
-
-
-# Get initial time
-initial_time = datetime.now()
-time.sleep(5)  # Simulating a delay of 5 seconds
-late_time = datetime.now()
-
-previous_time_line = "00:10:05"
-
-result = time_taken(initial_time, late_time, previous_time_line)
-print(result)  # Output will be the formatted time taken
