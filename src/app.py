@@ -243,7 +243,22 @@ class AdventureGameEngine:
         if scene["choice"] == {} and scene["continue"][0] == False:
             return True
 
-    def process_scene(self, scene):
+    def process_scene(self, scene, is_load_game=False):
+        if is_load_game:
+            GameStateController().update_data(
+                self.player.unique_id,
+                self.player.name,
+                scene,
+                is_load_game=is_load_game,
+            )
+
+            if DEBUG:
+                result = GameStateController().retrieve_data(
+                    self.player.unique_id, self.player.name
+                )
+                print("load_game_process_scene", result)
+                time.sleep(5)
+
         self.display_scene(scene, 0.02)
 
         # Update game state after each scene
@@ -256,7 +271,7 @@ class AdventureGameEngine:
                 self.player.unique_id, self.player.name
             )
             print(result)
-            # time.sleep(10)
+            # time.sleep(5)
 
         # If the game is completed and the player win, save the game state and reset the game scene
         # return
@@ -459,7 +474,7 @@ class AdventureGameEngine:
                 if not load_scene:
                     return
 
-                self.process_scene(load_scene)
+                self.process_scene(load_scene, is_load_game=True)
 
             case self.main_menu.STATISTICS:
                 print("Loading statistics ...")

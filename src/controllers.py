@@ -70,6 +70,7 @@ class GameStateController:
                 "player_name": player_name,
                 "scene_names": [],
                 "start_game": initial_time,
+                'latest_load_time': None,
                 "updated_game": initial_time,
                 "time_taken": "00:00:00",
             }
@@ -79,7 +80,7 @@ class GameStateController:
         except Exception as e:
             self._handle_exception("CREATE_USER_ERROR", e)
 
-    def update_data(self, unique_id, player_name, scene):
+    def update_data(self, unique_id, player_name, scene, is_load_game = False):
         try:
             if not unique_id or not player_name:
                 raise Exception("[UPDATE_USER] - Invalid input")
@@ -87,6 +88,12 @@ class GameStateController:
             if DEBUG:
                 print("finding data passed")
 
+            latest_load_time = None
+            
+            if is_load_game:
+                latest_load_time = datetime.now()
+                
+            
             latest_game = datetime.now()
 
             condition = (
@@ -109,13 +116,22 @@ class GameStateController:
             if result["scene_names"]:
                 if result["scene_names"][-1] == scene["name"]:
                     result["scene_names"].pop()
-
+            
+            time_taken_dict = {
+                        'old_time': result["updated_game"],
+                        'latest_time': latest_game,
+                        'load_time': latest_load_time or result['latest_load_time'],
+                        'time_taken': result["time_taken"]
+                    }
+                
             updated_player = {
                 **result,
                 "scene_names": [*result["scene_names"], scene["name"]],
                 "updated_game": latest_game,
+                'latest_load_time': latest_load_time or result['latest_load_time'],
                 "time_taken": self.calculate_time_taken(
-                    result["updated_game"], latest_game, result["time_taken"]
+                    # result["updated_game"], latest_game, result["time_taken"]
+                    time_taken_dict
                 ),
             }
 
@@ -165,12 +181,42 @@ class GameStateController:
             self._handle_exception("DELETE_USER_ERROR", e)
 
     # Utility methods
-    def calculate_time_taken(self, old_time, latest_time, previous_time_line = "00:00:00"):
-        hours, minutes, seconds = map(int, previous_time_line.split(":"))
-        time_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+    # def calculate_time_taken(self, old_time, latest_time, previous_time_line = "00:00:00"):
+    #     hours, minutes, seconds = map(int, previous_time_line.split(":"))
+    #     time_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
         
+    #     time_difference = latest_time - old_time
 
-        time_lapsed = (latest_time - old_time) + time_delta
+
+    #     time_lapsed = time_difference + time_delta
+
+    #     new_hours = time_lapsed.seconds // 3600
+    #     new_minutes = (time_lapsed.seconds % 3600) // 60
+    #     new_seconds = time_lapsed.seconds % 60
+
+    #     formatted_time = f"{new_hours:02}:{new_minutes:02}:{new_seconds:02}"
+
+    #     return formatted_time
+    
+
+    def calculate_time_taken(self, time_taken_dict):
+        old_time, latest_time, load_time, time_taken = ds(
+            time_taken_dict, 'old_time', 'latest_time', 'load_time', 'time_taken'
+        )
+
+        hours, minutes, seconds = map(int, time_taken.split(":"))
+        previous_time_line_time_delta = timedelta(
+            hours=hours, minutes=minutes, seconds=seconds
+        )
+
+        time_difference = latest_time - old_time
+
+        if load_time:
+            time_difference = latest_time - load_time
+        else:
+            time_difference = latest_time - old_time
+
+        time_lapsed = time_difference + previous_time_line_time_delta
 
         new_hours = time_lapsed.seconds // 3600
         new_minutes = (time_lapsed.seconds % 3600) // 60
@@ -179,6 +225,7 @@ class GameStateController:
         formatted_time = f"{new_hours:02}:{new_minutes:02}:{new_seconds:02}"
 
         return formatted_time
+
 
 
 
