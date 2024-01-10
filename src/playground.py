@@ -154,57 +154,5 @@ console = Console()
 # print(player_with_highest_num_of_scene)
 
 
-# date = datetime.now()
-# formatted_date = date.strftime("%Y-%m-%d %H:%M:%S")
-# print(formatted_date)
-# print(type(formatted_date))
-
-from app import GameStatistics
-
-gs = GameStatistics()
-# print(gs.original_data)
-# print(gs.aggregated_data)
-# [
-#     {
-#         "player_id": "18123b",
-#         "player_name": "gfgfdfghdfhg",
-#         "scene_names": [
-#             "enter forest",
-#             "fireflies",
-#             "ignore melody",
-#             "take boat",
-#             "Escape woods",
-#         ],
-#         "start_game": datetime.datetime(2024, 1, 9, 17, 49, 23, 223834),
-#         "latest_load_time": datetime.datetime(2024, 1, 9, 17, 50, 27, 858722),
-#         "updated_game": datetime.datetime(2024, 1, 9, 17, 50, 58, 956654),
-#         "time_taken": "00:02:08",
-#     },
-#     {
-#         "player_id": "420c33",
-#         "player_name": "ldfjkldfj",
-#         "scene_names": ["enter forest", "fireflies", "follow melody", "Escape woods"],
-#         "start_game": datetime.datetime(2024, 1, 9, 17, 37, 5, 551508),
-#         "latest_load_time": datetime.datetime(2024, 1, 9, 17, 45, 15, 433054),
-#         "updated_game": datetime.datetime(2024, 1, 9, 17, 45, 51, 225248),
-#         "time_taken": "00:02:22",
-#     },
-# # ]
-# {
-#     "highest_num_of_scenes": {
-#         "player_id": "18123b",
-#         "player_name": "gfgfdfghdfhg",
-#         "highest_number_of_scenes": 5,
-#     },
-#     "lowest_num_of_scenes": {
-#         "player_id": "420c33",
-#         "player_name": "ldfjkldfj",
-#         "lowest_number_of_scenes": 4,
-#     },
-#     "shortest_time_taken": "00:02:08",
-#     "longest_time_taken": "00:02:22",
-#     "average_time_taken": "0 hours 2 minutes 15.0 seconds",
-#     "num_of_wins": 2,
-# }
 # # TODO: Truncate the name
 # # make_truncated_name = lambda name: name[:10] + "..." if len(name) > 10 else name

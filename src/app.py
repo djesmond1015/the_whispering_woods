@@ -2,6 +2,9 @@
 import uuid
 from rich.console import Console
 from rich.table import Table
+from rich.spinner import Spinner
+from rich.columns import Columns
+from rich.live import Live
 from rich import box
 
 # Importing built-in modules
@@ -18,6 +21,7 @@ from utils import (
 from settings import DEBUG
 from controllers import GameStateController
 
+console = Console()
 
 class Printer:
     def __init__(self):
@@ -48,13 +52,11 @@ class Printer:
                 time.sleep(time_delay)
             print()
 
-
 class Player:
     # The combination of player_id and player_name is unique for player identifying purpose
     def __init__(self, name, unique_id=None):
         self.name = name
         self.unique_id = unique_id or uuid.uuid4().hex[:6]
-
 
 class GameMainMenu:
     def __init__(self):
@@ -71,7 +73,6 @@ class GameMainMenu:
             "\t\t4. Exit",
             "\n",
         ]
-
 
 class LoadGameMenu:
     def __init__(self):
@@ -91,11 +92,6 @@ class LoadGameMenu:
             #     return lambda x: False
             # else:
             return lambda x: x["scene_names"][-1] != WIN_SCENE
-
-        # condition = lambda x: x["scene_names"][-1] != WIN_SCENE
-        # condition = (
-        #     lambda x: x["scene_names"][-1] != WIN_SCENE or len(x["scene_names"]) == 0
-        # )
 
         game_list = GameStateController().retrieve_multiple_data(
             condition=condition()
@@ -121,7 +117,6 @@ class GameStatistics:
         self.original_data = self.get_original_data() or []
         self.time_taken_list = self.get_time_taken() or []
         self.aggregated_data = {
-            # "num_of_scenes": self.get_number_of_scenes(),
             "highest_num_of_scenes": self.get_highest_number_of_scenes(),
             "lowest_num_of_scenes": self.get_lowest_number_of_scenes(),
             "shortest_time_taken": self.get_shortest_time_taken(),
@@ -158,6 +153,9 @@ class GameStatistics:
     def get_highest_number_of_scenes(self):
         data = self.original_data
 
+        if not data:
+            return
+        
         player_with_highest_number_of_scenes = max(
             data,
             key=lambda player: len(player["scene_names"])
@@ -180,6 +178,9 @@ class GameStatistics:
     def get_lowest_number_of_scenes(self):
         data = self.original_data
 
+        if not data:
+            return
+        
         player_with_lowest_number_of_scenes = min(
             data,
             key=lambda player: len(player["scene_names"])
@@ -199,12 +200,18 @@ class GameStatistics:
 
     # The shortest time taken to complete the game in ''HH:MM:SS'' format
     def get_shortest_time_taken(self):
+        if not self.time_taken_list:
+            return
+        
         shortest_time_taken = min(self.time_taken_list, key=lambda time: fdt(time))
 
         return shortest_time_taken
 
     # The longest time taken to complete the game in ''HH:MM:SS'' format
     def get_longest_time_taken(self):
+        if not self.time_taken_list:
+            return
+
         longest_time_taken = max(self.time_taken_list, key=lambda time: fdt(time))
 
         return longest_time_taken
@@ -212,6 +219,10 @@ class GameStatistics:
     # The average time taken to complete the game in ''0hours 0minutes 0.0seconds'' format
     def get_average_time_taken(self):
         time_taken_list = self.time_taken_list
+
+        if not time_taken_list:
+            return
+        
         total_time = sum(map(lambda time: (fdt(time)).seconds, time_taken_list))
         number_of_players = len(time_taken_list)
         average_time_taken = total_time / number_of_players
@@ -233,10 +244,7 @@ class GameStatistics:
 
     # Presentation methods
     def display_statistics(self, data):
-
-        highest_num_of_scenes = data["highest_num_of_scenes"]
-        lowest_num_of_scenes = data["lowest_num_of_scenes"]
-
+        
         statistics_table = Table(
             show_header=True,
             header_style="bold #FF7B3C",
@@ -246,30 +254,37 @@ class GameStatistics:
         )
 
         # Define Column with less dim style
-        statistics_table.add_column("", style="#bbbbbb", min_width=40)
-        statistics_table.add_column("Player", style="#bbbbbb", min_width=40)
-        statistics_table.add_column('Number of scenes', style="#bbbbbb", min_width=40)
+        statistics_table.add_column("Statistics", style="#bbbbbb", min_width=30, justify="left")
+        statistics_table.add_column("Player", style="#bbbbbb", min_width=30, justify="center")
+        statistics_table.add_column('Number of scenes', style="#bbbbbb", min_width=30, justify="center")
 
-        # Add your Data into the Rows
-        statistics_table.add_row('Highest number of scenes', f'{highest_num_of_scenes['player_name']}__{highest_num_of_scenes['player_id']}',str(highest_num_of_scenes['highest_number_of_scenes']))
-        statistics_table.add_row('Lowest number of scenes', f'{lowest_num_of_scenes['player_name']}__{lowest_num_of_scenes['player_id']}',str(lowest_num_of_scenes['lowest_number_of_scenes']))
-        statistics_table.add_row('Shortest time taken','-', data['shortest_time_taken'])
-        statistics_table.add_row('Longest time taken','-', data['longest_time_taken'])
-        statistics_table.add_row('Average time taken','-', data['average_time_taken'])
-        statistics_table.add_row('Number of wins','-', str(data['num_of_wins']))
+        no_statistics_data_found = ''   
+        
+        if all(data.values()):
+            highest_num_of_scenes = data["highest_num_of_scenes"]
+            lowest_num_of_scenes = data["lowest_num_of_scenes"]
 
-        return statistics_table
+            # Add your Data into the Rows
+            statistics_table.add_row('Highest number of scenes', f'{highest_num_of_scenes['player_name']}__{highest_num_of_scenes['player_id']}',str(highest_num_of_scenes['highest_number_of_scenes']))
+            statistics_table.add_row('Lowest number of scenes', f'{lowest_num_of_scenes['player_name']}__{lowest_num_of_scenes['player_id']}',str(lowest_num_of_scenes['lowest_number_of_scenes']))
+            statistics_table.add_row('Shortest time taken','-', data['shortest_time_taken'])
+            statistics_table.add_row('Longest time taken','-', data['longest_time_taken'])
+            statistics_table.add_row('Average time taken','-', data['average_time_taken'])
+            statistics_table.add_row('Number of wins','-', str(data['num_of_wins']))
+        else:
+            no_statistics_data_found = "[yellow]There is no statistics found. Please start a new game."
+
+        return statistics_table, no_statistics_data_found
 
     def process_statistics(self):
-        console = Console()
-
         # Create a title for the statistics using rich
-        console.print("[bold magenta]Load Game", justify="center")
+        console.print("[bold magenta]Game Statistics", justify="center")
         
         agg_data = self.aggregated_data
-        statistics_table = self.display_statistics(agg_data)
+        statistics_table,  no_statistics_data_found= self.display_statistics(agg_data)
 
         console.print(statistics_table, justify="center")
+        console.print(no_statistics_data_found, justify="center")
         print("\n")
 
 class AdventureGameEngine:
@@ -283,7 +298,7 @@ class AdventureGameEngine:
         self.main_menu_choice = None
         self.load_game_menu = None
 
-    # Private methods
+    # Basic methods
     def get_scene(self, scene_name):
         try:
             return list(filter(lambda x: x["name"] == scene_name, scenes))[0]
@@ -307,6 +322,19 @@ class AdventureGameEngine:
         except:
             os.system("clear")
 
+    def display_loading_message(self, message, duration= 3):
+        spinners = Columns(
+            [
+                Spinner("dots12", text=message, style="#ffcc00"),
+                Spinner("simpleDotsScrolling", text="", style="#ffcc00"),
+            ],
+            column_first=True,
+        )
+
+        with Live(spinners, refresh_per_second=20) as live:
+            for _ in range(duration * 10):
+                time.sleep(0.1)
+
     def display_main_menu(self, time_delay):
         self.printer.print_list_steps(self.main_menu.menu, time_delay)
 
@@ -327,23 +355,49 @@ class AdventureGameEngine:
         else:
             self.printer.print_text_lists_typewriter(scene_text, time_delay)
 
-    def display_load_game(self, formatted_game_list, exit_text, reset_game):
-        formatted_menu_list = [
-            "\t\tSaved Games",
-            "\n",
-            "\tIndex \t\tPlayer \t\tCurrent Scene\t\tStart Game\t\tTime Taken",
-            # print the player list
-            *map(
-                lambda x: f"\t{x['index']}\t\t{x['player_name']}\t{x['scene_names'][-1]}\t{x['start_game']}\t{x['time_taken']}",
-                formatted_game_list,
-            ),
-            "\n",
-            reset_game,
-            exit_text,
-        ]
+    def make_load_game_table(self, game_list):
+        load_game_table = Table(
+            show_header=True,
+            header_style="bold cyan",
+            show_lines=True,
+            box=box.SIMPLE,
+            expand=True,
+        )
+        load_game_table.add_column("No", style="#bbbbbb", min_width=10, justify="left")
+        load_game_table.add_column("Player", style="#bbbbbb", min_width=20, justify="center")
+        load_game_table.add_column('Current Scene', style="#bbbbbb", min_width=20, justify="center")
+        load_game_table.add_column('Start Game', style="#bbbbbb", min_width=20, justify="center")
+        load_game_table.add_column('Time Taken', style="#bbbbbb", min_width=20, justify="center")
 
-        self.printer.print_list_once(formatted_menu_list)
+        
+        no_game_found = ''
 
+        if game_list:
+            for game in game_list:
+                load_game_table.add_row(str(game['index']), f'{game['player_name']}__{game['player_id']}', game['scene_names'][-1], game['start_game'], str(game['time_taken']))
+        else:
+            no_game_found = "[yellow]There is no saved game. Please start a new game."
+            
+        return load_game_table, no_game_found
+        
+    def display_load_game(self, game_list, reset_game, exit):
+        console = Console()
+
+        load_game_table, no_game_found = self.make_load_game_table(game_list)
+
+        console.print("[bold magenta]Load Game", justify="center")
+        
+        console.print(load_game_table, justify="center")
+        console.print(no_game_found, justify="center")
+        # Create a title for the statistics using rich
+        print("\n")
+        print("\n")
+        print("\n")
+        print(reset_game)
+        print(exit)
+        
+        print("\n")
+        
     # Business logic methods
     def back_to_menu(self):
         self.clear_screen()
@@ -369,8 +423,8 @@ class AdventureGameEngine:
 
             self.clear_screen()
 
-            print(
-                "[Invalid name - name must be at least 6 characters long and cannot contain numbers]"
+            console.print(
+                "[#ffcc00]Invalid name - name must be at least 6 characters long and cannot contain numbers"
             )
 
             player_name = self.handle_player_name_input()
@@ -482,7 +536,7 @@ class AdventureGameEngine:
             else:
                 self.display_scene(scene, 0)
                 print("\n")
-                print("[Invalid choice]")
+                console.print("[#ffcc00]Invalid choice")
 
     # # The process_load_game and format_saved_game_list methods are two methods that are tightly coupled together to handle the load game feature. The main method is the process_load_game method, while the other method is a helper method.
     def format_saved_game_list(self, game_list):
@@ -513,10 +567,13 @@ class AdventureGameEngine:
             game_menu_data, "game_list", "reset_game", "exit"
         )
 
+
         # Format the player list from the raw data before displaying the load game menu
         formatted_game_list = self.format_saved_game_list(game_list)
-        self.display_load_game(formatted_game_list, exit, reset_game)
 
+        self.display_load_game(formatted_game_list, exit, reset_game)
+            
+        
         # Get the last scene of each player
         last_scenes = list(map(lambda x: x["scene_names"][-1], game_list))
 
@@ -533,8 +590,7 @@ class AdventureGameEngine:
                 GameStateController().delete_all_load_games(game_list)
 
                 self.clear_screen()
-                print("Resetting game ...")
-                time.sleep(2)
+                self.display_loading_message("Resetting game")
 
                 self.back_to_menu()
 
@@ -579,8 +635,7 @@ class AdventureGameEngine:
                 )
 
                 self.clear_screen()
-                print("Loading game ...")
-                time.sleep(2)
+                self.display_loading_message("Loading game")
 
                 return load_scene
 
@@ -589,7 +644,7 @@ class AdventureGameEngine:
                 self.display_load_game(formatted_game_list, exit, reset_game)
 
                 print("\n")
-                print("[Invalid choice]")
+                console.print("[#ffcc00]Invalid choice")
 
     def process_game_statistics(self):
         self.clear_screen()
@@ -599,7 +654,7 @@ class AdventureGameEngine:
         game_statistics.process_statistics()
 
         while True:
-            choice = input("Want to return to Main Menu (y)").strip()
+            choice = input("Want to return to Main Menu (y)? ").strip()
 
             # Check the reserved keyword for exit and reset game
             if choice == "Y" or choice == "y":
@@ -611,8 +666,7 @@ class AdventureGameEngine:
             game_statistics.process_statistics()
 
             print("\n")
-            print("[Invalid choice]")
-
+            console.print("[#ffcc00]Invalid choice")
 
     # Game Engine Local Controller methods
     def main_menu_controller(self):
@@ -644,12 +698,15 @@ class AdventureGameEngine:
                     # time.sleep(10)
 
                 self.clear_screen()
-                print("Starting game...")
-                time.sleep(2)
+                self.display_loading_message("Starting game")
 
                 self.process_scene(self.current_scene)
 
             case self.main_menu.LOAD_GAME:
+                self.clear_screen()
+
+                self.display_loading_message("Loading saved game")
+                
                 load_scene = self.process_load_game()
 
                 # If load_scene is None, return to menu
@@ -661,15 +718,14 @@ class AdventureGameEngine:
             case self.main_menu.STATISTICS:
                 self.clear_screen()
 
-                print("Loading statistics ...")
-                time.sleep(2)
-
+                self.display_loading_message("Loading statistics")
+                
                 self.process_game_statistics()
 
             case self.main_menu.EXIT_GAME:
+                self.clear_screen()
                 print("See you next time!")
                 time.sleep(2)
-                self.clear_screen()
                 self.keep_running = False
 
             case _:
