@@ -181,24 +181,6 @@ class GameStateController:
             self._handle_exception("DELETE_USER_ERROR", e)
 
     # Utility methods
-    # def calculate_time_taken(self, old_time, latest_time, previous_time_line = "00:00:00"):
-    #     hours, minutes, seconds = map(int, previous_time_line.split(":"))
-    #     time_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-        
-    #     time_difference = latest_time - old_time
-
-
-    #     time_lapsed = time_difference + time_delta
-
-    #     new_hours = time_lapsed.seconds // 3600
-    #     new_minutes = (time_lapsed.seconds % 3600) // 60
-    #     new_seconds = time_lapsed.seconds % 60
-
-    #     formatted_time = f"{new_hours:02}:{new_minutes:02}:{new_seconds:02}"
-
-    #     return formatted_time
-    
-
     def calculate_time_taken(self, time_taken_dict):
         old_time, latest_time, load_time, time_taken = ds(
             time_taken_dict, 'old_time', 'latest_time', 'load_time', 'time_taken'

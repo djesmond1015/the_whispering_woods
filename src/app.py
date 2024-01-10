@@ -1,5 +1,8 @@
 # Importing external modules
 import uuid
+from rich.console import Console
+from rich.table import Table
+from rich import box
 
 # Importing built-in modules
 import os, sys, time
@@ -10,6 +13,7 @@ from dataset import scenes, WIN_SCENE
 from utils import (
     destructure as ds,
     formatted_datetime as fd,
+    formatted_datetime_to_timedelta as fdt,
 )
 from settings import DEBUG
 from controllers import GameStateController
@@ -82,11 +86,11 @@ class LoadGameMenu:
 
     def get_game_list(self):
         # the condition have issue because something the x['scene_names'] dict might be empty
-        def condition(x):
-            if x == []:
-                return False
-            else:
-                return x["scene_names"][-1] != WIN_SCENE
+        def condition():
+            # if x == []:
+            #     return lambda x: False
+            # else:
+            return lambda x: x["scene_names"][-1] != WIN_SCENE
 
         # condition = lambda x: x["scene_names"][-1] != WIN_SCENE
         # condition = (
@@ -94,7 +98,7 @@ class LoadGameMenu:
         # )
 
         game_list = GameStateController().retrieve_multiple_data(
-            condition=condition
+            condition=condition()
         )  # retrieve all players with uncompleted games
         print("from game_list", game_list)
         # formatting the datetime for each player
@@ -112,6 +116,161 @@ class LoadGameMenu:
     def get_exit(self):
         return self.exit
 
+class GameStatistics:
+    def __init__(self):
+        self.original_data = self.get_original_data() or []
+        self.time_taken_list = self.get_time_taken() or []
+        self.aggregated_data = {
+            # "num_of_scenes": self.get_number_of_scenes(),
+            "highest_num_of_scenes": self.get_highest_number_of_scenes(),
+            "lowest_num_of_scenes": self.get_lowest_number_of_scenes(),
+            "shortest_time_taken": self.get_shortest_time_taken(),
+            "longest_time_taken": self.get_longest_time_taken(),
+            "average_time_taken": self.get_average_time_taken(),
+            "num_of_wins": self.get_number_of_wins(),
+        }
+
+    # Basic methods
+
+    # Get the original data from the game state ordered by start_game descending order
+    def get_original_data(self):
+        condition = lambda player: player["scene_names"][-1] == WIN_SCENE
+
+        data = GameStateController().retrieve_multiple_data(condition=condition)
+        # return the data sorted by start_game descending order
+        sorted_data = sorted(
+            data, key=lambda player: fd(player["start_game"]), reverse=True
+        )
+
+        return sorted_data
+
+    # The time taken to complete the game for each player
+    def get_time_taken(self):
+        data = self.original_data
+        time_taken_list = list(map(lambda x: x["time_taken"], data))
+
+        return time_taken_list
+
+    # Business Logic methods
+
+    # Get the highest number of scenes the player has visited to complete the game.
+    # If the highest number of scenes is the same for multiple players, return the first player in the list.
+    def get_highest_number_of_scenes(self):
+        data = self.original_data
+
+        player_with_highest_number_of_scenes = max(
+            data,
+            key=lambda player: len(player["scene_names"])
+            if "scene_names" in player
+            else 0,
+        )
+
+        formatted_player = {
+            "player_id": player_with_highest_number_of_scenes["player_id"],
+            "player_name": player_with_highest_number_of_scenes["player_name"],
+            "highest_number_of_scenes": len(
+                player_with_highest_number_of_scenes["scene_names"]
+            ),
+        }
+
+        return formatted_player
+
+    # Get the lowest number of scenes the player has visited to complete the game.
+    # If the lowest number of scenes is the same for multiple players, return the first player in the list.
+    def get_lowest_number_of_scenes(self):
+        data = self.original_data
+
+        player_with_lowest_number_of_scenes = min(
+            data,
+            key=lambda player: len(player["scene_names"])
+            if "scene_names" in player
+            else 0,
+        )
+
+        formatted_player = {
+            "player_id": player_with_lowest_number_of_scenes["player_id"],
+            "player_name": player_with_lowest_number_of_scenes["player_name"],
+            "lowest_number_of_scenes": len(
+                player_with_lowest_number_of_scenes["scene_names"]
+            ),
+        }
+
+        return formatted_player
+
+    # The shortest time taken to complete the game in ''HH:MM:SS'' format
+    def get_shortest_time_taken(self):
+        shortest_time_taken = min(self.time_taken_list, key=lambda time: fdt(time))
+
+        return shortest_time_taken
+
+    # The longest time taken to complete the game in ''HH:MM:SS'' format
+    def get_longest_time_taken(self):
+        longest_time_taken = max(self.time_taken_list, key=lambda time: fdt(time))
+
+        return longest_time_taken
+
+    # The average time taken to complete the game in ''0hours 0minutes 0.0seconds'' format
+    def get_average_time_taken(self):
+        time_taken_list = self.time_taken_list
+        total_time = sum(map(lambda time: (fdt(time)).seconds, time_taken_list))
+        number_of_players = len(time_taken_list)
+        average_time_taken = total_time / number_of_players
+
+        hours = int(average_time_taken // 3600)
+        minutes = int((average_time_taken % 3600) // 60)
+        seconds = average_time_taken % 60
+
+        formatted_average_time_taken = (
+            f"{hours} hours {minutes} minutes {seconds} seconds"
+        )
+
+        return formatted_average_time_taken
+
+    # The number of times the player has won the game
+    def get_number_of_wins(self):
+        number_of_wins = len(self.original_data)
+        return number_of_wins
+
+    # Presentation methods
+    def display_statistics(self, data):
+
+        highest_num_of_scenes = data["highest_num_of_scenes"]
+        lowest_num_of_scenes = data["lowest_num_of_scenes"]
+
+        statistics_table = Table(
+            show_header=True,
+            header_style="bold #FF7B3C",
+            show_lines=True,
+            box=box.SIMPLE,
+            expand=True,
+        )
+
+        # Define Column with less dim style
+        statistics_table.add_column("", style="#bbbbbb", min_width=40)
+        statistics_table.add_column("Player", style="#bbbbbb", min_width=40)
+        statistics_table.add_column('Number of scenes', style="#bbbbbb", min_width=40)
+
+        # Add your Data into the Rows
+        statistics_table.add_row('Highest number of scenes', f'{highest_num_of_scenes['player_name']}__{highest_num_of_scenes['player_id']}',str(highest_num_of_scenes['highest_number_of_scenes']))
+        statistics_table.add_row('Lowest number of scenes', f'{lowest_num_of_scenes['player_name']}__{lowest_num_of_scenes['player_id']}',str(lowest_num_of_scenes['lowest_number_of_scenes']))
+        statistics_table.add_row('Shortest time taken','-', data['shortest_time_taken'])
+        statistics_table.add_row('Longest time taken','-', data['longest_time_taken'])
+        statistics_table.add_row('Average time taken','-', data['average_time_taken'])
+        statistics_table.add_row('Number of wins','-', str(data['num_of_wins']))
+
+        return statistics_table
+
+    def process_statistics(self):
+        console = Console()
+
+        # Create a title for the statistics using rich
+        console.print("[bold magenta]Load Game", justify="center")
+        
+        agg_data = self.aggregated_data
+        statistics_table = self.display_statistics(agg_data)
+
+        console.print(statistics_table, justify="center")
+        print("\n")
 
 class AdventureGameEngine:
     def __init__(self):
@@ -432,6 +591,29 @@ class AdventureGameEngine:
                 print("\n")
                 print("[Invalid choice]")
 
+    def process_game_statistics(self):
+        self.clear_screen()
+
+        game_statistics = GameStatistics()
+    
+        game_statistics.process_statistics()
+
+        while True:
+            choice = input("Want to return to Main Menu (y)").strip()
+
+            # Check the reserved keyword for exit and reset game
+            if choice == "Y" or choice == "y":
+                self.back_to_menu()
+
+                break
+
+            self.clear_screen()
+            game_statistics.process_statistics()
+
+            print("\n")
+            print("[Invalid choice]")
+
+
     # Game Engine Local Controller methods
     def main_menu_controller(self):
         self.main_menu_choice = input("Enter your choice: ").strip()
@@ -477,8 +659,12 @@ class AdventureGameEngine:
                 self.process_scene(load_scene, is_load_game=True)
 
             case self.main_menu.STATISTICS:
+                self.clear_screen()
+
                 print("Loading statistics ...")
                 time.sleep(2)
+
+                self.process_game_statistics()
 
             case self.main_menu.EXIT_GAME:
                 print("See you next time!")
@@ -506,30 +692,3 @@ class AdventureGameEngine:
         self.clear_screen()
 
 
-class GameStatistics:
-    def __init__(self):
-        pass
-
-    def get_time_taken(self):
-        pass
-
-    def get_number_of_scenes(self):
-        pass
-
-    def get_highest_number_of_scenes(self):
-        pass
-
-    def get_lowest_number_of_scenes(self):
-        pass
-
-    def get_average_time_taken(self):
-        pass
-
-    def get_shortest_time_taken(self):
-        pass
-
-    def get_longest_time_taken(self):
-        pass
-
-    def get_number_of_wins(self):
-        pass
