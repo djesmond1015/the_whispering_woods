@@ -12,7 +12,7 @@ import os, sys, time
 from datetime import datetime
 
 # Importing local modules
-from dataset import scenes, WIN_SCENE
+from dataset import scenes, START_SCENE, END_SCENE
 from utils import (
     destructure as ds,
     formatted_datetime as fd,
@@ -22,6 +22,13 @@ from settings import DEBUG
 from controllers import GameStateController
 
 console = Console()
+
+
+# original_text = [
+#     "You stand at the edge of the forbidden woods, a place shrouded in mystery and whispered tales. The air is thick with an unsettling stillness as the ancient trees loom overhead, their gnarled branches creating an intricate canopy that blocks out most of the sunlight. The locals have always avoided this place, speaking in hushed tones of eerie singing echoing through the trees at night and strange conversations that seem to linger in the air.",
+#     "Despite the warnings, an unexplainable force draws you in. The allure of the unknown pulls at your curiosity, urging you to step beyond the boundary that separates the ordinary from the extraordinary. As you take your first step into the shadowy embrace of the forbidden woods, the outside world fades away, and the air becomes charged with a palpable energy.",
+#     "The crunch of fallen leaves beneath your feet is the only sound breaking the silence. The path ahead is unclear, and every tree seems to hold its secrets. You can feel the weight of the unseen eyes watching, and the air seems to whisper with the echoes of those who ventured here before. The choices you make now will shape your destiny in this mysterious realm.",
+# ]
 
 class Printer:
     def __init__(self):
@@ -36,22 +43,48 @@ class Printer:
             print(item)
             time.sleep(time_delay)
 
-    def print_text_typewriter(self, text, time_delay=0.05):
-        for char in text:
+    def print_text_typewriter(self, original_text_string, time_delay=0.05):
+        wrapped_text = self.wrap_text(original_text_string, console.width)
+
+        for char in wrapped_text:
             sys.stdout.write(
                 char
             )  # write the next character same as print built-in function
             sys.stdout.flush()
             time.sleep(time_delay)
+        print('\n') # move to the next line after each wrapped text
 
-    def print_text_lists_typewriter(self, list, time_delay=0.05):
-        for item in list:
-            for char in item:
+    def print_text_lists_typewriter(self, original_text_list, time_delay=0.05):
+        for wrap_text in original_text_list:
+            wrapped_text = self.wrap_text(wrap_text, console.width)
+
+            for char in wrapped_text:
                 sys.stdout.write(char)
                 sys.stdout.flush()
                 time.sleep(time_delay)
-            print()
+            print('\n') # move to the next line after each wrapped text
+        print('\n') # move to the next line after each original text
 
+    
+    def wrap_text(self, text, line_length):
+        words = text.split()
+        lines_list = []
+        current_line = ""
+
+        for word in words:
+            if len(current_line) + len(word) + 1 <= line_length:
+                current_line += word + " "
+            else:
+                lines_list.append(current_line.strip())
+                current_line = word + " "
+
+        if current_line:
+            lines_list.append(current_line.strip())
+
+        line_string = "\n".join(lines_list)
+        
+        return line_string
+    
 class Player:
     # The combination of player_id and player_name is unique for player identifying purpose
     def __init__(self, name, unique_id=None):
@@ -91,7 +124,7 @@ class LoadGameMenu:
             # if x == []:
             #     return lambda x: False
             # else:
-            return lambda x: x["scene_names"][-1] != WIN_SCENE
+            return lambda x: x["scene_names"][-1] != END_SCENE
 
         game_list = GameStateController().retrieve_multiple_data(
             condition=condition()
@@ -129,7 +162,7 @@ class GameStatistics:
 
     # Get the original data from the game state ordered by start_game descending order
     def get_original_data(self):
-        condition = lambda player: player["scene_names"][-1] == WIN_SCENE
+        condition = lambda player: player["scene_names"][-1] == END_SCENE
 
         data = GameStateController().retrieve_multiple_data(condition=condition)
         # return the data sorted by start_game descending order
@@ -292,7 +325,7 @@ class AdventureGameEngine:
         self.keep_running = True
         self.initial_time = None
         self.printer = Printer()
-        self.current_scene = self.get_scene("enter forest")
+        self.current_scene = self.get_scene(START_SCENE)
         self.player = None
         self.main_menu = GameMainMenu()
         self.main_menu_choice = None
@@ -347,11 +380,12 @@ class AdventureGameEngine:
         self.clear_screen()
 
         scene_text = scene["text"]
-        # if that is only a choice
+
+        # if scene_text is a string
         if type(scene_text) != list:
             self.printer.print_text_typewriter(scene_text)
 
-        # if that is a list of choices
+        # if scene_text is a list
         else:
             self.printer.print_text_lists_typewriter(scene_text, time_delay)
 
@@ -492,7 +526,7 @@ class AdventureGameEngine:
             self.current_scene = self.get_scene("enter forest")
 
             GameStateController().update_data(
-                self.player.unique_id, self.player.name, {"name": WIN_SCENE}
+                self.player.unique_id, self.player.name, {"name": END_SCENE}
             )
 
             if DEBUG:

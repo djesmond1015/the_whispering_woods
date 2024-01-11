@@ -154,5 +154,25 @@ console = Console()
 # print(player_with_highest_num_of_scene)
 
 
-# # TODO: Truncate the name
+# TODO: Truncate the name
 # # make_truncated_name = lambda name: name[:10] + "..." if len(name) > 10 else name
+from app import Printer
+
+
+# \n - new line
+# whitespace - \
+
+# Example usage:
+original_text = """
+    You stand at the edge of the forbidden woods, a place shrouded in mystery and whispered tales. The air is thick with an unsettling stillness as the ancient trees loom overhead, their gnarled branches creating an intricate canopy that blocks out most of the sunlight. The locals have always avoided this place, speaking in hushed tones of eerie singing echoing through the trees at night and strange conversations that seem to linger in the air.
+    "Despite the warnings, an unexplainable force draws you in. The allure of the unknown pulls at your curiosity, urging you to step beyond the boundary that separates the ordinary from the extraordinary. As you take your first step into the shadowy embrace of the forbidden woods, the outside world fades away, and the air becomes charged with a palpable energy.
+    "The crunch of fallen leaves beneath your feet is the only sound breaking the silence. The path ahead is unclear, and every tree seems to hold its secrets. You can feel the weight of the unseen eyes watching, and the air seems to whisper with the echoes of those who ventured here before. The choices you make now will shape your destiny in this mysterious realm.
+"""
+# get the length of text in the terminal
+
+
+# wrapped_text = wrap_text(original_text, console.width)
+printer = Printer()
+printer.print_text_typewriter(original_text, 0.01)
+# result = printer.process_wrap_text_list(original_text)
+# print(result)
