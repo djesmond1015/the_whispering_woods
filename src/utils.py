@@ -19,3 +19,13 @@ def formatted_datetime_to_timedelta(formatted_datetime) -> timedelta:
         print("[formatted_datetime_to_timedelta error]")
         print(e)
         return
+
+
+def truncate_name(name):
+    truncated_name = ""
+    if len(name) > 10:
+        truncated_name = name[:10] + "..."
+    else:
+        truncated_name = name
+
+    return truncated_name

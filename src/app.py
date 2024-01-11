@@ -12,11 +12,12 @@ import os, sys, time
 from datetime import datetime
 
 # Importing local modules
-from dataset import scenes, START_SCENE, END_SCENE
+from dataset import scenes, START_SCENE, END_SCENE, SceneText
 from utils import (
     destructure as ds,
     formatted_datetime as fd,
     formatted_datetime_to_timedelta as fdt,
+    truncate_name
 )
 from settings import DEBUG
 from controllers import GameStateController
@@ -36,11 +37,11 @@ class Printer:
             if len(current_line) + len(word) + 1 <= line_length:
                 current_line += word + " "
             else:
-                lines_list.append(current_line.strip())
+                lines_list.append(current_line)
                 current_line = word + " "
 
         if current_line:
-            lines_list.append(current_line.strip())
+            lines_list.append(current_line)
 
         line_string = "\n".join(lines_list)
         
@@ -55,7 +56,7 @@ class Printer:
             print(item)
             time.sleep(time_delay)
 
-    def print_text_typewriter(self, original_text_string, time_delay=0.02):
+    def print_text_simple_typewriter(self, original_text_string, time_delay=0.02):
         wrapped_text = self.wrap_text(original_text_string, console.width)
 
         for char in wrapped_text:
@@ -66,21 +67,39 @@ class Printer:
             time.sleep(time_delay)
         print('\n') # move to the next line after each wrapped text
 
-    def print_text_lists_typewriter(self, original_text_list, time_delay=0.02):
+    def print_text_scene_typewriter(self, original_text_list:dict, time_delay=0.02):
         indeterminate_time = time_delay
+        
+        for key, text_list in original_text_list.items():
+            for text in text_list:
+                wrapped_text = self.wrap_text(text, console.width)
 
-        for wrap_text in original_text_list:
-            wrapped_text = self.wrap_text(wrap_text, console.width)
+                if key == SceneText.NARRATIVES:
+                    for char in wrapped_text:
+                        console.print(char,end='', style="#bcc7bf")
+                        sys.stdout.flush()
+                        time.sleep(indeterminate_time)
+                elif key == SceneText.DIALOGUES:
+                    for char in wrapped_text:
+                        console.print(char,end='', style="cyan")
+                        sys.stdout.flush()
+                        time.sleep(indeterminate_time)
+                elif key == SceneText.CHOICES:
+                    for char in wrapped_text:
+                        console.print(char,end='', style="#e7b125")
+                        sys.stdout.flush()
+                        time.sleep(indeterminate_time)
+                else:
+                    print(key)
+                    for char in wrapped_text:
+                        sys.stdout.write(char)
+                        sys.stdout.flush()
+                        time.sleep(indeterminate_time)
 
-            for char in wrapped_text:
-                sys.stdout.write(char)
-                sys.stdout.flush()
-                time.sleep(indeterminate_time)
-
-            indeterminate_time = indeterminate_time * 0.6 if indeterminate_time >= 0.01 else 0
-            print('\n') # move to the next line after each wrapped text
+                indeterminate_time = indeterminate_time * 0.6 if indeterminate_time >= 0.01 else 0
+                print('\n') # move to the next line after each wrapped text
             
-        print('\n') # move to the next line after each original text
+            print('') # move to the next line after each original text
 
 
 class Player:
@@ -96,15 +115,21 @@ class GameMainMenu:
         self.STATISTICS = "3"
         self.EXIT_GAME = "4"
         self.menu = [
-            "\t\tText Adventure Game",
-            "\n",
-            "\t\t1. Start Game",
-            "\t\t2. Load Game",
-            "\t\t3. Statistics",
-            "\t\t4. Exit",
-            "\n",
+           "1. Start Game", "2. Load Game", "3. Statistics", "4. Exit"
         ]
 
+    def make_menu(self):
+        console.print(
+        "Text Adventure Game - [bold magenta]The Whispering Woods",
+        end="",
+        style="yellow",
+        justify="center",
+    )
+        print('\n')
+        console.print(*self.menu, sep="\n", style="bold green", justify="center")
+        print('\n')
+        print('\n')
+        
 class LoadGameMenu:
     def __init__(self):
         self.exit = "[Q] - Return to menu"
@@ -296,8 +321,8 @@ class GameStatistics:
             lowest_num_of_scenes = data["lowest_num_of_scenes"]
 
             # Add your Data into the Rows
-            statistics_table.add_row('Highest number of scenes', f'{highest_num_of_scenes['player_name']}__{highest_num_of_scenes['player_id']}',str(highest_num_of_scenes['highest_number_of_scenes']))
-            statistics_table.add_row('Lowest number of scenes', f'{lowest_num_of_scenes['player_name']}__{lowest_num_of_scenes['player_id']}',str(lowest_num_of_scenes['lowest_number_of_scenes']))
+            statistics_table.add_row('Highest number of scenes', f'{truncate_name(highest_num_of_scenes['player_name'])}__{highest_num_of_scenes['player_id']}',str(highest_num_of_scenes['highest_number_of_scenes']))
+            statistics_table.add_row('Lowest number of scenes', f'{truncate_name(lowest_num_of_scenes['player_name'])}__{lowest_num_of_scenes['player_id']}',str(lowest_num_of_scenes['lowest_number_of_scenes']))
             statistics_table.add_row('Shortest time taken','-', data['shortest_time_taken'])
             statistics_table.add_row('Longest time taken','-', data['longest_time_taken'])
             statistics_table.add_row('Average time taken','-', data['average_time_taken'])
@@ -367,11 +392,12 @@ class AdventureGameEngine:
                 time.sleep(0.1)
 
     def display_main_menu(self, time_delay):
-        self.printer.print_list_steps(self.main_menu.menu, time_delay)
+        # self.printer.print_list_steps(self.main_menu.menu, time_delay)
+        self.main_menu.make_menu()
 
-    def display_saved_games(self, time_delay=0.02):
-        self.printer.print_text_typewriter(
-            "\n[S] - Save and back to menu?\n", time_delay
+    def display_saved_games(self, time_delay=0.01):
+        self.printer.print_text_simple_typewriter(
+            "[S] - Save and back to menu?\n", time_delay
         )
 
     def display_scene(self, scene, time_delay=0.01):
@@ -380,12 +406,12 @@ class AdventureGameEngine:
         scene_text = scene["text"]
 
         # if scene_text is a string
-        if type(scene_text) != list:
-            self.printer.print_text_typewriter(scene_text)
+        if type(scene_text) != list and type(scene_text) != dict:
+            self.printer.print_text_simple_typewriter(scene_text)
 
         # if scene_text is a list
         else:
-            self.printer.print_text_lists_typewriter(scene_text, time_delay)
+            self.printer.print_text_scene_typewriter(scene_text, time_delay=time_delay)
 
     def make_load_game_table(self, game_list):
         load_game_table = Table(
@@ -406,7 +432,7 @@ class AdventureGameEngine:
 
         if game_list:
             for game in game_list:
-                load_game_table.add_row(str(game['index']), f'{game['player_name']}__{game['player_id']}', game['scene_names'][-1], game['start_game'], str(game['time_taken']))
+                load_game_table.add_row(str(game['index']), f'{truncate_name(game['player_name'])}__{game['player_id']}', game['scene_names'][-1], game['start_game'], str(game['time_taken']))
         else:
             no_game_found = "[yellow]There is no saved game. Please start a new game."
             
@@ -521,27 +547,30 @@ class AdventureGameEngine:
         # If the game is completed and the player win, save the game state and reset the game scene
         # return
         if self.is_game_completed(scene):
-            self.current_scene = self.get_scene("enter forest")
+            self.current_scene = self.get_scene(START_SCENE)
 
-            GameStateController().update_data(
-                self.player.unique_id, self.player.name, {"name": END_SCENE}
-            )
+            # GameStateController().update_data(
+            #     self.player.unique_id, self.player.name, {"name": END_SCENE}
+            # )
 
             if DEBUG:
                 result = GameStateController().retrieve_data(
                     self.player.unique_id, self.player.name
                 )
-                print(result)
-                # time.sleep(10)
+                print('game_win', result)
+                time.sleep(10)
+            
+            
+            input("Press enter to continue...")
 
-            print("You win!")
-            time.sleep(2)
+            self.clear_screen()
+            print('Well done! You have completed the game!')
+            time.sleep(5)
 
             return
 
         while True:
-            print("\n")
-            self.display_saved_games(0.02)
+            self.display_saved_games(0.01)
 
             # In this If-else statement block, we handle two different cases of user input.
             # If there is no choice, show the continue to the next scene message
@@ -566,7 +595,7 @@ class AdventureGameEngine:
             if is_valid_choice:
                 break
             else:
-                self.display_scene(scene, 0)
+                self.display_scene(scene, time_delay=0)
                 print("\n")
                 console.print("[#ffcc00]Invalid choice")
 
@@ -761,7 +790,7 @@ class AdventureGameEngine:
                 self.keep_running = False
 
             case _:
-                print("Invalid input, please try again.")
+                console.print("[#ffcc00]Invalid input, please try again.")
                 time.sleep(1)
 
     # Main methods - single entry point
