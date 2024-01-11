@@ -23,48 +23,9 @@ from controllers import GameStateController
 
 console = Console()
 
-
-# original_text = [
-#     "You stand at the edge of the forbidden woods, a place shrouded in mystery and whispered tales. The air is thick with an unsettling stillness as the ancient trees loom overhead, their gnarled branches creating an intricate canopy that blocks out most of the sunlight. The locals have always avoided this place, speaking in hushed tones of eerie singing echoing through the trees at night and strange conversations that seem to linger in the air.",
-#     "Despite the warnings, an unexplainable force draws you in. The allure of the unknown pulls at your curiosity, urging you to step beyond the boundary that separates the ordinary from the extraordinary. As you take your first step into the shadowy embrace of the forbidden woods, the outside world fades away, and the air becomes charged with a palpable energy.",
-#     "The crunch of fallen leaves beneath your feet is the only sound breaking the silence. The path ahead is unclear, and every tree seems to hold its secrets. You can feel the weight of the unseen eyes watching, and the air seems to whisper with the echoes of those who ventured here before. The choices you make now will shape your destiny in this mysterious realm.",
-# ]
-
 class Printer:
     def __init__(self):
         pass
-
-    def print_list_once(self, list):
-        for item in list:
-            print(item)
-
-    def print_list_steps(self, list, time_delay=1):
-        for item in list:
-            print(item)
-            time.sleep(time_delay)
-
-    def print_text_typewriter(self, original_text_string, time_delay=0.05):
-        wrapped_text = self.wrap_text(original_text_string, console.width)
-
-        for char in wrapped_text:
-            sys.stdout.write(
-                char
-            )  # write the next character same as print built-in function
-            sys.stdout.flush()
-            time.sleep(time_delay)
-        print('\n') # move to the next line after each wrapped text
-
-    def print_text_lists_typewriter(self, original_text_list, time_delay=0.05):
-        for wrap_text in original_text_list:
-            wrapped_text = self.wrap_text(wrap_text, console.width)
-
-            for char in wrapped_text:
-                sys.stdout.write(char)
-                sys.stdout.flush()
-                time.sleep(time_delay)
-            print('\n') # move to the next line after each wrapped text
-        print('\n') # move to the next line after each original text
-
     
     def wrap_text(self, text, line_length):
         words = text.split()
@@ -85,6 +46,43 @@ class Printer:
         
         return line_string
     
+    def print_list_once(self, list):
+        for item in list:
+            print(item)
+
+    def print_list_steps(self, list, time_delay=1):
+        for item in list:
+            print(item)
+            time.sleep(time_delay)
+
+    def print_text_typewriter(self, original_text_string, time_delay=0.02):
+        wrapped_text = self.wrap_text(original_text_string, console.width)
+
+        for char in wrapped_text:
+            sys.stdout.write(
+                char
+            )  # write the next character same as print built-in function
+            sys.stdout.flush()
+            time.sleep(time_delay)
+        print('\n') # move to the next line after each wrapped text
+
+    def print_text_lists_typewriter(self, original_text_list, time_delay=0.02):
+        indeterminate_time = time_delay
+
+        for wrap_text in original_text_list:
+            wrapped_text = self.wrap_text(wrap_text, console.width)
+
+            for char in wrapped_text:
+                sys.stdout.write(char)
+                sys.stdout.flush()
+                time.sleep(indeterminate_time)
+
+            indeterminate_time = indeterminate_time * 0.6 if indeterminate_time >= 0.01 else 0
+            print('\n') # move to the next line after each wrapped text
+            
+        print('\n') # move to the next line after each original text
+
+
 class Player:
     # The combination of player_id and player_name is unique for player identifying purpose
     def __init__(self, name, unique_id=None):
@@ -376,7 +374,7 @@ class AdventureGameEngine:
             "\n[S] - Save and back to menu?\n", time_delay
         )
 
-    def display_scene(self, scene, time_delay=0.02):
+    def display_scene(self, scene, time_delay=0.01):
         self.clear_screen()
 
         scene_text = scene["text"]
@@ -506,7 +504,7 @@ class AdventureGameEngine:
                 print("load_game_process_scene", result)
                 time.sleep(5)
 
-        self.display_scene(scene, 0.02)
+        self.display_scene(scene, 0.01)
 
         # Update game state after each scene
         GameStateController().update_data(
