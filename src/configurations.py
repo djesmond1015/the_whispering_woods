@@ -17,3 +17,26 @@ def handle_config():
 
         GameStateAdapter().delete_game_state()
         print("Game state file deleted")
+
+
+def handle_config_dev():
+    if settings.ENABLE_EXPORT:
+        if settings.EXPORT_GAME_STATE:
+            from controllers import GameStateController
+            from _export import Exporter
+
+            file_format = settings.EXPORT_GAME_STATE[0]
+            data = GameStateController().retrieve_multiple_data()
+
+            Exporter().export_data(data, "theWhisperingWoods_game_state", file_format)
+
+        if settings.EXPORT_GAME_DATASET:
+            from dataset import scenes
+            from _export import Exporter
+
+            file_format = settings.EXPORT_GAME_DATASET[0]
+            data = scenes
+
+            Exporter().export_data(data, "theWhisperingWoods_dataset", file_format)
+    else:
+        print("Export is disabled")

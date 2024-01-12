@@ -152,8 +152,6 @@ class LoadGameMenu:
         game_list = GameStateController().retrieve_multiple_data(
             condition=condition()
         )  # retrieve all players with uncompleted games
-        print("from game_list", game_list)
-        # formatting the datetime for each player
 
         for game in game_list:
             game["start_game"] = fd(game["start_game"])

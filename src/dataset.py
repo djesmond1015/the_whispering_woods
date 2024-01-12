@@ -3,9 +3,6 @@ from enum import Enum
 START_SCENE = "Enter woods"
 END_SCENE = "Escape woods"
 
-# properties of text dict: narratives, dialogues, choices
-# create a constant variable for text dict
-
 
 class SceneText(Enum):
     NARRATIVES = "narratives"
@@ -13,39 +10,39 @@ class SceneText(Enum):
     CHOICES = "choices"
 
 
-# scenes = [
-#     {
-#         "name": "Find distress flare",
-#         "text": {
-#             SceneText.NARRATIVES: [
-#                 "Amidst the relics of the old cabin, your eyes catch a glint in a dark corner. As you investigate further, you uncover a forgotten storage compartment. Within it lies a distress flare, its red casing standing out in stark contrast to the muted tones of the cabin. The distress flare, nestled among forgotten possessions, seems like a relic from a time when this cabin served as a refuge. Its vibrant red casing suggests a tool meant for urgent communication, evoking questions about the events that unfolded within the subterranean depths."
-#             ]
-#         },
-#         "choice": {},
-#         "continue": (True, "Meet rescue team"),
-#     },
-#     {
-#         "name": "Meet rescue team",
-#         "text": {
-#             SceneText.NARRATIVES: [
-#                 "With the distress flare in hand, you decide to utilize its potential, recognizing it as a tool that can bridge the gap between the subterranean depths and the surface world. As you ignite the flare, its vivid red glow fills the chamber, casting an eerie yet captivating light on the old cabin's timeworn interior. The glow of the flare becomes a beacon that cuts through the darkness, signalling not only your presence but also the urgency of your situation. As the radiant glow of the distress flare permeates the hidden chamber, a distant rumble accompanied by voices that grow louder with each passing moment. The voices draw nearer, and the language spoken is one of familiarity—a rescue team, their words laced with concern and purpose.",
-#                 "As the rescue team's footsteps draw near, a subtle shift in the atmosphere envelops the hidden cave. The woods beyond the cave seems to sigh, the once vibrant glow of crystals dims, and the eerie luminescence that danced upon timeworn walls begins to fade. It's as if everything in this whispering woods, aware of the approaching presence, desires to keep its secrets concealed. As the rescue team's flashlights pierce the darkness, the once enchanted woods now appears like any forgotten relic of the past. The rescue team leads you through the woods, the trees giving way to moonlit paths.",
-#             ]
-#         },
-#         "choice": {},
-#         "continue": (True, END_SCENE),
-#     },
-#     {
-#         "name": END_SCENE,
-#         "text": {
-#             SceneText.NARRATIVES: [
-#                 "The journey, once fraught with mystery and danger, now transforms into a triumphant escape. As you step into the clearing, in a gesture of acknowledgment, the ancient trees in the woods seem to bow as you step beyond the woods' edge, emerging from the thrilling adventure into the embrace of the night, leaving the mysteries of the whispering woods behind. The woods, though left behind, becomes a part of a tale you will tell in the future—a forbidden adventure that unfolded amidst the shadows and secrets of a realm touched by magic, that will forever a lingering sense of wonder in your heart. As you step into the night, guided by the moon and the echoes of an unforgettable journey, the whispering woods continue to whisper its ancient secrets, awaiting for the next adventurer."
-#             ]
-#         },
-#         "choice": {},
-#         "continue": (False, None),
-#     },
-# ]
+dev_scenes = [
+    {
+        "name": "Find distress flare",
+        "text": {
+            SceneText.NARRATIVES: [
+                "Amidst the relics of the old cabin, your eyes catch a glint in a dark corner. As you investigate further, you uncover a forgotten storage compartment. Within it lies a distress flare, its red casing standing out in stark contrast to the muted tones of the cabin. The distress flare, nestled among forgotten possessions, seems like a relic from a time when this cabin served as a refuge. Its vibrant red casing suggests a tool meant for urgent communication, evoking questions about the events that unfolded within the subterranean depths."
+            ]
+        },
+        "choice": {},
+        "continue": (True, "Meet rescue team"),
+    },
+    {
+        "name": "Meet rescue team",
+        "text": {
+            SceneText.NARRATIVES: [
+                "With the distress flare in hand, you decide to utilize its potential, recognizing it as a tool that can bridge the gap between the subterranean depths and the surface world. As you ignite the flare, its vivid red glow fills the chamber, casting an eerie yet captivating light on the old cabin's timeworn interior. The glow of the flare becomes a beacon that cuts through the darkness, signalling not only your presence but also the urgency of your situation. As the radiant glow of the distress flare permeates the hidden chamber, a distant rumble accompanied by voices that grow louder with each passing moment. The voices draw nearer, and the language spoken is one of familiarity—a rescue team, their words laced with concern and purpose.",
+                "As the rescue team's footsteps draw near, a subtle shift in the atmosphere envelops the hidden cave. The woods beyond the cave seems to sigh, the once vibrant glow of crystals dims, and the eerie luminescence that danced upon timeworn walls begins to fade. It's as if everything in this whispering woods, aware of the approaching presence, desires to keep its secrets concealed. As the rescue team's flashlights pierce the darkness, the once enchanted woods now appears like any forgotten relic of the past. The rescue team leads you through the woods, the trees giving way to moonlit paths.",
+            ]
+        },
+        "choice": {},
+        "continue": (True, END_SCENE),
+    },
+    {
+        "name": END_SCENE,
+        "text": {
+            SceneText.NARRATIVES: [
+                "The journey, once fraught with mystery and danger, now transforms into a triumphant escape. As you step into the clearing, in a gesture of acknowledgment, the ancient trees in the woods seem to bow as you step beyond the woods' edge, emerging from the thrilling adventure into the embrace of the night, leaving the mysteries of the whispering woods behind. The woods, though left behind, becomes a part of a tale you will tell in the future—a forbidden adventure that unfolded amidst the shadows and secrets of a realm touched by magic, that will forever a lingering sense of wonder in your heart. As you step into the night, guided by the moon and the echoes of an unforgettable journey, the whispering woods continue to whisper its ancient secrets, awaiting for the next adventurer."
+            ]
+        },
+        "choice": {},
+        "continue": (False, None),
+    },
+]
 
 scenes = [
     {

@@ -57,6 +57,3 @@ class GameStateAdapter:
             # Raise error if default value is not provided
             else:
                 raise
-
-
-# TODO: add more adapters to support other external data sources such as json, csv, etc. Add the config to the config file.
