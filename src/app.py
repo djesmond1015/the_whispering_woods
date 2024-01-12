@@ -143,19 +143,25 @@ class LoadGameMenu:
 
     def get_game_list(self):
         # the condition have issue because something the x['scene_names'] dict might be empty
-        def condition():
-            # if x == []:
-            #     return lambda x: False
-            # else:
-            return lambda x: x["scene_names"][-1] != END_SCENE
+    
+        condition =  lambda x: x["scene_names"][-1] != END_SCENE if x["scene_names"] else False
 
-        game_list = GameStateController().retrieve_multiple_data(
-            condition=condition()
+        try:
+            game_list = GameStateController().retrieve_multiple_data(
+            condition=condition
         )  # retrieve all players with uncompleted games
+        except:
+            from adapters import GameStateAdapter
 
+            GameStateAdapter().initialize_game_state()
+            game_list = GameStateController().retrieve_multiple_data(
+            condition=condition
+        )  # retrieve all players with uncompleted games
+            
         for game in game_list:
             game["start_game"] = fd(game["start_game"])
             game["updated_game"] = fd(game["updated_game"])
+        
 
         if DEBUG:
             print(game_list)
@@ -185,8 +191,16 @@ class GameStatistics:
     def get_original_data(self):
         condition = lambda player: player["scene_names"][-1] == END_SCENE
 
-        data = GameStateController().retrieve_multiple_data(condition=condition)
+        try:
+            data = GameStateController().retrieve_multiple_data(condition=condition)
         # return the data sorted by start_game descending order
+            
+        except:
+            from adapters import GameStateAdapter
+
+            GameStateAdapter().initialize_game_state()
+            data = GameStateController().retrieve_multiple_data(condition=condition)
+            
         sorted_data = sorted(
             data, key=lambda player: fd(player["start_game"]), reverse=True
         )
@@ -746,8 +760,15 @@ class AdventureGameEngine:
                 self.player = Player(player_name)
                 self.initial_time = datetime.now()
 
-                GameStateController().create_data(self.player, self.initial_time)
+                # During production mode, the game state is initialized only once
+                try:
+                    GameStateController().create_data(self.player, self.initial_time)
+                except:
+                    from adapters import GameStateAdapter
 
+                    GameStateAdapter().initialize_game_state()
+                    GameStateController().create_data(self.player, self.initial_time)
+                
                 if DEBUG:
                     response = GameStateController().retrieve_data(
                         self.player.unique_id,

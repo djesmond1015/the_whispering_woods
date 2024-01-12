@@ -12,11 +12,7 @@ gsa = GameStateAdapter()
 class GameStateController:
     def __init__(self):
         self.data = gsa.load_game_state() if gsa else None
-        # print(self.data)
-        # time.sleep(5)
-        # lambda x: x["scene_names"][-1] != WIN_SCENE
-        # [{'player_id': 'eae476', 'player_name': 'sddfdfgdf', 'scene_names': ['enter forest', 'fireflies', 'ignore melody', 'ignore boat', 'exit', 'Escape woods'], 'start_game': datetime.datetime(2024, 1, 7, 21, 35, 6, 129931), 'updated_game': datetime.datetime(2024, 1, 7, 21, 44, 23, 103227), 'time_taken': '00:00:00'}, {'player_id': 'dfea1e', 'player_name': 'q', 'scene_names': [], 'start_game': datetime.datetime(2024, 1, 8, 9, 36, 51, 530456), 'updated_game': datetime.datetime(2024, 1, 8, 9, 36, 51, 530456), 'time_taken': '00:00:00'}]
-
+   
     # Private methods
     def _handle_exception(self, error_flag: str, e: Exception, message: str = None):
         print(f'[{error_flag}] - {message or 'Something went wrong'}')
