@@ -14,6 +14,7 @@ class GameStateAdapter:
         pwd = os.getcwd()
         path = Path(pwd + f"/{path}")
         path.mkdir(parents=True, exist_ok=True)
+
         return path
 
     def get_file_path(self):
