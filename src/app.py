@@ -609,7 +609,7 @@ class AdventureGameEngine:
             else:
                 self.display_scene(scene, time_delay=0)
                 print("\n")
-                console.print("[#ffcc00]Invalid choice")
+                console.print("[red]Invalid choice")
 
     # # The process_load_game and format_saved_game_list methods are two methods that are tightly coupled together to handle the load game feature. The main method is the process_load_game method, while the other method is a helper method.
     def format_saved_game_list(self, game_list):
@@ -717,7 +717,7 @@ class AdventureGameEngine:
                 self.display_load_game(formatted_game_list, exit, reset_game)
 
                 print("\n")
-                console.print("[#ffcc00]Invalid choice")
+                console.print("[red]Invalid choice")
 
     def process_game_statistics(self):
         self.clear_screen()
@@ -739,7 +739,7 @@ class AdventureGameEngine:
             game_statistics.process_statistics()
 
             print("\n")
-            console.print("[#ffcc00]Invalid choice")
+            console.print("[red]Invalid choice")
 
     # Game Engine Local Controller methods
     def main_menu_controller(self):

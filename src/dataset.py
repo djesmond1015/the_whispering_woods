@@ -296,8 +296,8 @@ scenes = [
             ],
             SceneText.CHOICES: [
                 "Choose the path you want to continue: ",
-                "Go Left: The left path winds through narrow corridors, the sound of your footsteps reverberating against the cavern walls. The guardian follows, its echoing footsteps creating a haunting symphony.",
-                "Go Right: Opting for the right path leads you through a series of twisting tunnels, the shadows playing tricks on your perception.",
+                "[1] - Go Left: The left path winds through narrow corridors, the sound of your footsteps reverberating against the cavern walls. The guardian follows, its echoing footsteps creating a haunting symphony.",
+                "[2] - Go Right: Opting for the right path leads you through a series of twisting tunnels, the shadows playing tricks on your perception.",
             ],
         },
         "choice": {
