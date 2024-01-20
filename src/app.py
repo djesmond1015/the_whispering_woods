@@ -19,8 +19,9 @@ from utils import (
     formatted_datetime_to_timedelta as fdt,
     truncate_name
 )
-from settings import DEBUG
+from settings import DEBUG, SOURCE_CODE_URL
 from controllers import GameStateController
+from export import Exporter
 
 console = Console()
 
@@ -113,9 +114,10 @@ class GameMainMenu:
         self.START_GAME = "1"
         self.LOAD_GAME = "2"
         self.STATISTICS = "3"
-        self.EXIT_GAME = "4"
+        self.ABOUT_US = "4"
+        self.EXIT_GAME = "5"
         self.menu = [
-           "1. Start Game", "2. Load Game", "3. Statistics", "4. Exit"
+           "1. Start Game", "2. Load Game", "3. Statistics", "4. About Us" , "5. Exit"
         ]
 
     def make_menu(self):
@@ -356,13 +358,14 @@ class GameStatistics:
         print("\n")
 
 class AdventureGameEngine:
+    main_menu = GameMainMenu()
+    printer = Printer()
+
     def __init__(self):
         self.keep_running = True
         self.initial_time = None
-        self.printer = Printer()
         self.current_scene = self.get_scene(START_SCENE)
         self.player = None
-        self.main_menu = GameMainMenu()
         self.main_menu_choice = None
         self.load_game_menu = None
 
@@ -403,8 +406,7 @@ class AdventureGameEngine:
             for _ in range(duration * 10):
                 time.sleep(0.1)
 
-    def display_main_menu(self, time_delay):
-        # self.printer.print_list_steps(self.main_menu.menu, time_delay)
+    def display_main_menu(self):
         self.main_menu.make_menu()
 
     def display_saved_games(self, time_delay=0.01):
@@ -418,7 +420,7 @@ class AdventureGameEngine:
         scene_text = scene["text"]
 
         # if scene_text is a string
-        if type(scene_text) != list and type(scene_text) != dict:
+        if type(scene_text) != list and type(scene_text) != dict and isinstance(scene_text, str):
             self.printer.print_text_simple_typewriter(scene_text)
 
         # if scene_text is a list
@@ -468,10 +470,40 @@ class AdventureGameEngine:
         
         print("\n")
         
+    def display_about_us(self):
+        self.clear_screen()
+
+        print("This game is developed by:")
+        print("Chew Wei Zhi")
+        print("Lee Jia Hee")
+        print("\n")
+        print("Source code:", end=" ")
+        print(f"{SOURCE_CODE_URL}\n\n")
+
+        print("Export data (Supported file formats - json, txt)")
+        print("[1] - Export game dataset (json)")
+        print("[2] - Export game dataset (txt)\n\n")
+                
+        print("Thank you for playing!\n\n")
+
+        file_path = self.process_export_data()
+
+        if file_path:
+            self.display_export_success_message(file_path)
+        
+        return
+
+    def display_export_success_message(self, file_path):
+        self.clear_screen()
+        print("Data exported successfully!")
+        print(f"You may find the exported data in: {file_path}\n\n")
+
+        input("Press enter to return to Main Menu...")
+    
     # Business logic methods
     def back_to_menu(self):
         self.clear_screen()
-        self.display_main_menu(0.05)
+        self.display_main_menu()
 
     def handle_player_name_input(self):
         print("\nPlease enter a valid name (at least 6 characters long)")
@@ -516,6 +548,7 @@ class AdventureGameEngine:
         elif user_choice in scene["continue"]:
             self.current_scene = self.get_scene(user_choice)
             self.process_scene(self.current_scene)
+
         # If the choice is not in the choice list, the choice is invalidate, return False
         else:
             return False
@@ -560,10 +593,6 @@ class AdventureGameEngine:
         # return
         if self.is_game_completed(scene):
             self.current_scene = self.get_scene(START_SCENE)
-
-            # GameStateController().update_data(
-            #     self.player.unique_id, self.player.name, {"name": END_SCENE}
-            # )
 
             if DEBUG:
                 result = GameStateController().retrieve_data(
@@ -615,13 +644,13 @@ class AdventureGameEngine:
     def format_saved_game_list(self, game_list):
         formatted_game_list = list(
             map(
-                lambda x: {
-                    "index": x[0] + 1,
-                    "player_id": x[1]["player_id"],
-                    "player_name": x[1]["player_name"],
-                    "scene_names": x[1]["scene_names"],
-                    "start_game": x[1]["start_game"],
-                    "time_taken": x[1]["time_taken"],
+                lambda game: {
+                    "index": game[0] + 1,
+                    "player_id": game[1]["player_id"],
+                    "player_name": game[1]["player_name"],
+                    "scene_names": game[1]["scene_names"],
+                    "start_game": game[1]["start_game"],
+                    "time_taken": game[1]["time_taken"],
                 },
                 enumerate(game_list),
             )
@@ -696,8 +725,8 @@ class AdventureGameEngine:
                 # get the player object from the player list by matching the player_id and player_name as [player_id, player_name] is unique
                 load_player = list(
                     filter(
-                        lambda x: x["player_id"] == load_game_dictionary["player_id"]
-                        and x["player_name"] == load_game_dictionary["player_name"],
+                        lambda game: game["player_id"] == load_game_dictionary["player_id"]
+                        and game["player_name"] == load_game_dictionary["player_name"],
                         game_list,
                     )
                 )[0]
@@ -740,6 +769,25 @@ class AdventureGameEngine:
 
             print("\n")
             console.print("[red]Invalid choice")
+
+
+    def process_export_data(self):
+        exporter = Exporter()
+        file_path = exporter.get_download_path_windows() or exporter.get_download_path_mac()
+
+        
+        choice = input("Enter your choice or press any key to return to Main Menu: ").strip()
+
+        if choice == "1":
+            exporter.export_data(data=scenes, file_format="json", file_name="game_dataset")
+
+            return file_path
+        elif choice == "2":
+            exporter.export_data(data=scenes, file_format="txt", file_name="game_dataset")
+
+            return file_path            
+        
+        return
 
     # Game Engine Local Controller methods
     def main_menu_controller(self):
@@ -802,6 +850,9 @@ class AdventureGameEngine:
                 
                 self.process_game_statistics()
 
+            case self.main_menu.ABOUT_US:
+                self.display_about_us()
+                
             case self.main_menu.EXIT_GAME:
                 self.clear_screen()
                 print("See you next time!")
@@ -814,16 +865,17 @@ class AdventureGameEngine:
 
     # Main methods - single entry point
     def start_game_engine(self):
-        self.clear_screen()
-        self.display_main_menu(0.05)
 
-        while self.keep_running:
+        while True:
+            self.clear_screen()
+            self.display_main_menu()
+
             self.main_menu_controller()
 
-            # Clear the screen before showing the menu again
-            self.clear_screen()
-            self.display_main_menu(0)
-
+            # If keep_running is False, exit the game
+            if not self.keep_running:
+                break
+        
         # Clear the screen after exit the game
         self.clear_screen()
 
