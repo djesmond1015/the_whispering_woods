@@ -39,3 +39,23 @@
 # 6. The shortest time taken to complete the game.
 # 7. The longest time taken to complete the game.
 # 8. The number of wins the player has achieved.
+
+# Todo: review the code again and add necessary explanations for the functions
+
+# TODO: Add readme file and docs (optional)
+# readme file should include:
+# what is the program about
+# storyline of the game
+# installation guide
+# how to play the game
+# ask for feedback and leave a star on github
+
+# docs should include:
+# refer to notion and eraser.io to collect more information
+# the purpose of the program
+# the planning process (attach the flowchart) and leave eraser.io link
+# the features of the program
+# explain each feature in detail
+# explain the technologies used (refer to requirements.txt)
+# explain the purpose of each file
+# explain how the game works (bring in explanation some  of the function)

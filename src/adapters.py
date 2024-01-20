@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 class GameStateAdapter:
-    def __init__(self, path_name="state_manager"):
+    def __init__(self, path_name="stateManager"):
         self.PLAYER_LIST = []
         self.directory = self.create_directory(path_name)
         self.initial_time = datetime.now()

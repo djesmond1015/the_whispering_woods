@@ -177,3 +177,6 @@ pyrightconfig.json
 
 # Peacock custom color
 .vscode
+
+# Application files
+stateManager/
