@@ -1,5 +1,5 @@
 # *********************************************************
-# Program: app.py
+# Program: The Whispering Woods (Text-Based Adventure Game)
 # Course: PSP0101 PROBLEM SOLVING AND PROGRAM DESIGN
 # Class: TL2L
 # Year: 2023/24 Trimester 1
@@ -10,17 +10,21 @@
 # *********************************************************
 
 
+# This is the main file that will be executed to start the game
 from configurations import handle_config, handle_config_dev
 
 from app import AdventureGameEngine
 
 
 def main():
+    # Start the game engine (Entry point)
     app = AdventureGameEngine()
     app.start_game_engine()
 
 
 if __name__ == "__main__":
+    # Before starting the game, handle configurations based on the settings in settings.py
     handle_config()
     handle_config_dev()
+
     main()

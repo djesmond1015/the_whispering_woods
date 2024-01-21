@@ -1,3 +1,5 @@
+# All the functions and business logic are in this module.
+
 # Importing external modules
 import uuid
 from rich.console import Console
@@ -12,7 +14,15 @@ import os, sys, time
 from datetime import datetime
 
 # Importing local modules
-from dataset import scenes, START_SCENE, END_SCENE, SceneText
+from dataset import (
+    scenes, 
+    START_SCENE, 
+    END_SCENE, 
+    APP_NAME, 
+    SceneText,
+    dev_scenes,
+    DEV_START_SCENE
+)
 from utils import (
     destructure as ds,
     formatted_datetime as fd,
@@ -23,24 +33,31 @@ from settings import DEBUG, SOURCE_CODE_URL
 from controllers import GameStateController
 from export import Exporter
 
+# Initialize the rich console
 console = Console()
 
 class Printer:
     def __init__(self):
         pass
     
-    def wrap_text(self, text, line_length):
+    # Utility methods
+    
+    # Make the text responsive to the console width
+    def wrap_text(self, text: str, line_length: int) -> str:
         words = text.split()
         lines_list = []
         current_line = ""
 
         for word in words:
+            # If the current line length + the word length + 1 (for the space) is less than the line length, add the word to the current line
             if len(current_line) + len(word) + 1 <= line_length:
                 current_line += word + " "
+            # Else, create a new line and add the word to the new line
             else:
                 lines_list.append(current_line)
                 current_line = word + " "
 
+        # Add the last line to the lines list
         if current_line:
             lines_list.append(current_line)
 
@@ -48,15 +65,21 @@ class Printer:
         
         return line_string
     
+    
+    # Main methods
+
+    # Print the text without any effects
     def print_list_once(self, list):
         for item in list:
             print(item)
 
+    # Print the text line by line with a time delay
     def print_list_steps(self, list, time_delay=1):
         for item in list:
             print(item)
             time.sleep(time_delay)
 
+    # Print the text with typewriter effect (only support string data type)
     def print_text_simple_typewriter(self, original_text_string, time_delay=0.02):
         wrapped_text = self.wrap_text(original_text_string, console.width)
 
@@ -68,6 +91,7 @@ class Printer:
             time.sleep(time_delay)
         print('\n') # move to the next line after each wrapped text
 
+    # Print the text of the scene with typewriter effect (support dict data type)
     def print_text_scene_typewriter(self, original_text_list:dict, time_delay=0.02):
         indeterminate_time = time_delay
         
@@ -122,7 +146,7 @@ class GameMainMenu:
 
     def make_menu(self):
         console.print(
-        "Text Adventure Game - [bold magenta]The Whispering Woods",
+        f"Text Adventure Game - [bold magenta]{APP_NAME}",
         end="",
         style="yellow",
         justify="center",
@@ -143,8 +167,8 @@ class LoadGameMenu:
             "exit": self.exit,
         }
 
+    # The game list is sorted by the start_game datetime in descending order
     def get_game_list(self):
-        # the condition have issue because something the x['scene_names'] dict might be empty
     
         condition =  lambda x: x["scene_names"][-1] != END_SCENE if x["scene_names"] else False
 
@@ -158,21 +182,22 @@ class LoadGameMenu:
             GameStateAdapter().initialize_game_state()
             game_list = GameStateController().retrieve_multiple_data(
             condition=condition
-        )  # retrieve all players with uncompleted games
-            
-        for game in game_list:
-            game["start_game"] = fd(game["start_game"])
-            game["updated_game"] = fd(game["updated_game"])
+        )  # this will return an empty list as the game state is initialized
+        
+        sorted_game_list = sorted(
+            game_list, key=lambda player: fd(player["start_game"]), reverse=True
+        )
+
+        for player in sorted_game_list:
+            player["start_game"] = fd(player["start_game"])
+            player["updated_game"] = fd(player["updated_game"])
         
 
         if DEBUG:
             print(game_list)
             # time.sleep(10)
 
-        return game_list
-
-    def get_exit(self):
-        return self.exit
+        return sorted_game_list
 
 class GameStatistics:
     def __init__(self):
@@ -189,22 +214,23 @@ class GameStatistics:
 
     # Basic methods
 
-    # Get the original data from the game state ordered by start_game descending order
+    # Get the original data from the game state ordered by updated_game descending order
     def get_original_data(self):
-        condition = lambda player: player["scene_names"][-1] == END_SCENE
+        # When the game state is initialized, the game state will be empty list
+        condition = lambda player: player["scene_names"][-1] == END_SCENE if player["scene_names"] else False
 
         try:
             data = GameStateController().retrieve_multiple_data(condition=condition)
-        # return the data sorted by start_game descending order
+        # return completed games only
             
         except:
             from adapters import GameStateAdapter
 
             GameStateAdapter().initialize_game_state()
             data = GameStateController().retrieve_multiple_data(condition=condition)
-            
+        
         sorted_data = sorted(
-            data, key=lambda player: fd(player["start_game"]), reverse=True
+            data, key=lambda player: fd(player["updated_game"]), reverse=True
         )
 
         return sorted_data
@@ -299,7 +325,7 @@ class GameStatistics:
 
         hours = int(average_time_taken // 3600)
         minutes = int((average_time_taken % 3600) // 60)
-        seconds = average_time_taken % 60
+        seconds = int(average_time_taken % 60)
 
         formatted_average_time_taken = (
             f"{hours} hours {minutes} minutes {seconds} seconds"
@@ -330,11 +356,12 @@ class GameStatistics:
 
         no_statistics_data_found = ''   
         
+        # Only display the statistics if all the data is available
         if all(data.values()):
             highest_num_of_scenes = data["highest_num_of_scenes"]
             lowest_num_of_scenes = data["lowest_num_of_scenes"]
 
-            # Add your Data into the Rows
+            # Add data into the Rows
             statistics_table.add_row('Highest number of scenes', f'{truncate_name(highest_num_of_scenes['player_name'])}__{highest_num_of_scenes['player_id']}',str(highest_num_of_scenes['highest_number_of_scenes']))
             statistics_table.add_row('Lowest number of scenes', f'{truncate_name(lowest_num_of_scenes['player_name'])}__{lowest_num_of_scenes['player_id']}',str(lowest_num_of_scenes['lowest_number_of_scenes']))
             statistics_table.add_row('Shortest time taken','-', data['shortest_time_taken'])
@@ -358,21 +385,24 @@ class GameStatistics:
         print("\n")
 
 class AdventureGameEngine:
+    # static variables (these variables are shared across all instances of the class)
+    # useful for testing
     main_menu = GameMainMenu()
     printer = Printer()
 
     def __init__(self):
         self.keep_running = True
         self.initial_time = None
+        self.scenes = scenes
         self.current_scene = self.get_scene(START_SCENE)
         self.player = None
         self.main_menu_choice = None
         self.load_game_menu = None
 
-    # Basic methods
+    # Basic methods (for initialization purpose)
     def get_scene(self, scene_name):
         try:
-            return list(filter(lambda x: x["name"] == scene_name, scenes))[0]
+            return list(filter(lambda x: x["name"] == scene_name, self.scenes))[0]
         except IndexError as e:
             print("[GET_SCENE_ERROR] - Invalid scene name")
             print(e)
@@ -533,7 +563,7 @@ class AdventureGameEngine:
 
         return player_name
 
-    # The match_choice, is_game_completed and process_scene methods are three methods that are tightly coupled together to handle the game flow, the main feature of the game. The main method is the process_scene method and match choice method, while the other two methods are helper methods.
+    # The match_choice, is_game_completed and process_scene methods are three methods that are tightly coupled together to handle the game flow, the main feature of the game. The main methods is the process_scene method, while the other two methods are helper methods.
     def match_choice(self, user_choice, scene):
         self.clear_screen()
 

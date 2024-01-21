@@ -1,3 +1,6 @@
+# This is the module handle configurations of the application.
+# It takes variables from settings.py and executes the functions in configurations.py to alter the behaviour of the application.
+
 import settings
 
 
@@ -23,7 +26,7 @@ def handle_config_dev():
     if settings.ENABLE_EXPORT:
         if settings.EXPORT_GAME_STATE:
             from controllers import GameStateController
-            from _export import Exporter
+            from export import Exporter
 
             file_format = settings.EXPORT_GAME_STATE[0]
             data = GameStateController().retrieve_multiple_data()
@@ -32,7 +35,7 @@ def handle_config_dev():
 
         if settings.EXPORT_GAME_DATASET:
             from dataset import scenes
-            from _export import Exporter
+            from export import Exporter
 
             file_format = settings.EXPORT_GAME_DATASET[0]
             data = scenes

@@ -1,15 +1,24 @@
+# This is the file that contains all the "assets" and constants of the game, which will be used to create the game.
+
 from enum import Enum
 
+# Constants
+APP_NAME = "The Whispering Woods"
 START_SCENE = "Enter woods"
 END_SCENE = "Escape woods"
 
+DEV_START_SCENE = "Find distress flare"
 
+
+# Enum constants
+# Purpose - Enumerations provide a way to create named constant values, making the code more readable, self-documenting, and less error-prone.
 class SceneText(Enum):
     NARRATIVES = "narratives"
     DIALOGUES = "dialogues"
     CHOICES = "choices"
 
 
+# Scene dataset for development or testing purpose
 dev_scenes = [
     {
         "name": "Find distress flare",
@@ -44,6 +53,7 @@ dev_scenes = [
     },
 ]
 
+# Scene dataset for production
 scenes = [
     {
         "name": START_SCENE,

@@ -1,3 +1,5 @@
+# This is the module handle export functionality of the application.
+
 import json
 import os
 from pathlib import Path
@@ -5,7 +7,11 @@ from enum import Enum
 
 
 class Exporter:
-    # get the path of the Downloads folder for Windows
+    def __init__(self):
+        pass
+
+    # Get the path of the Downloads folder for Windows using Windows Registry (winreg) module
+    # More info: https://stackoverflow.com/questions/35851281/python-get-path-to-downloads-folder-windows
     def get_download_path_windows(self):
         import winreg
 
@@ -16,11 +22,17 @@ class Exporter:
             location = winreg.QueryValueEx(key, downloads_guid)[0]
         return location
 
-    # get the path of the Downloads folder for Mac
+    # Get the path of the Downloads folder for Mac
+    # More info: https://stackoverflow.com/questions/40295823/how-to-get-the-downloads-folder-in-python
     def get_download_path_mac(self):
-        location = os.path.join(Path.home(), "Desktop")
+        location = os.path.join(Path.home(), "Desktop") or os.path.join(
+            os.path.expanduser("~"), "downloads"
+        )
         return location
 
+    # Two convert functions below are used to convert data to the appropriate format before exporting the data to a file.
+
+    # Convert enum to string
     def convert_enum_to_str(self, data):
         if isinstance(data, Enum):
             return data.value
@@ -34,6 +46,7 @@ class Exporter:
         else:
             return data
 
+    # Convert datetime to isoformat
     def convert_datetime_to_isoformat(self, data):
         from datetime import datetime
 
@@ -51,6 +64,9 @@ class Exporter:
         else:
             return data
 
+    # After converting the data to the appropriate format, the data will be exported which is handled by the export_data function and create_file function.
+
+    # Create file path for the exported file
     def create_file(self, file_name, file_format):
         try:
             return os.path.join(
@@ -61,6 +77,7 @@ class Exporter:
                 self.get_download_path_mac(), f"{file_name}.{file_format}"
             )
 
+    # Main function to export data to a file
     def export_data(self, data, file_name, file_format):
         converted_data = self.convert_enum_to_str(data)
         converted_data = self.convert_datetime_to_isoformat(converted_data)
