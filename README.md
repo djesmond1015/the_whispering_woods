@@ -1,6 +1,10 @@
 # The Whispering Forest
 
-<!-- Image of the game -->
+> A text-based adventure game written in Python
+
+[![GitHub stars](https://img.shields.io/github/stars/djesmond1015/the_whispering_woods?style=social)]
+
+![Game Preview](docs/static/game_preview_screen.png)
 
 ## Table of Contents
 
@@ -36,28 +40,26 @@ What make the game unique are the following features:
 1. Git clone the repository or download the zip file
 
 ```bash
-git clone
+git clone https://github.com/djesmond1015/the_whispering_woods.git
 ```
 
 2. Install the game using pip
    We assume that you have Python 3.6 or higher installed on your system. If not, please install it first.
 
 ```bash
-pip intall
+pip install -r requirements.txt
 ```
 
 3. Run the application
    Once the installation is complete, you can run the game by typing the following command in the terminal.
 
 ```bash
-python3 -m whispering-forest
+python -m src/main.py
 ```
 
 ### Approach 2: Install standalone executable file
 
-<!-- todo add the link here -->
-
-1. Download the executable file from the release page
+1. Download the executable file here [link](https://github.com/djesmond1015/the_whispering_woods/blob/main/theWhisperingForest.zip)
 2. Run the executable file
 3. Enjoy the game
 
