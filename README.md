@@ -2,9 +2,9 @@
 
 > A text-based adventure game written in Python
 
-<br>
+</br>
 ![Game Preview](docs/static/game_preview_screen.png)
-<br>
+<!-- <br> -->
 
 ## Table of Contents
 
@@ -98,9 +98,10 @@ python -u src/main.py
 
 The game flow of The Whispering Forest is non-linear(multiple options) and is designed to be played multiple times with the same ending for each game.
 
-You can find the game flow chart in Simple form [here](docs/static/game_flow_simple.png) and Detailed form [here](docs/static/game_flow_detailed.png).
+You can find the game flow chart in Simple Form [here](docs/static/game_flow_simple.png) and Detailed Form [here](docs/static/game_flow_detailed.png).
 
-Pro tip: Open the flow chart in a new tab to view it in full size.
+</br>
+**Pro tip: Open the flow chart in a new tab to view it in full size.**
 
 ### Game Main Menu
 
@@ -115,11 +116,11 @@ This is the place where you can load your saved game and resume your fantastic o
 ### Game Statistics
 
 This is the place where you can view your game statistics. Only completed games will be shown.
-[![Game Statistics](docs/static/game_statistics.png)]
+![Game Statistics](docs/static/game_statistics.png)
 
 ### Game Export
 
-If you would like to export the dataset of the game flow as shown in the [Game Flow](#game-flow) section, you can do so by navigating to the About page and choosing the Export option. We support exporting the dataset in **JSON** and ==TXT== formats.
+If you would like to export the dataset of the game flow as shown in the [Game Flow](#game-flow) section, you can do so by navigating to the About page and choosing the Export option. We support exporting the dataset in **JSON** and **TXT** formats.
 ![Game Export](docs/static/game_export.png)
 
 ## Acknowledgements
