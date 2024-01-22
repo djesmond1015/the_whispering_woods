@@ -26,4 +26,4 @@ EXPORT_GAME_DATASET = ["json", "txt"]
 
 # Any URL related to the application (e.g. github repo, documentation, etc.)
 
-SOURCE_CODE_URL = "https://github.com/djesmond1015/text_adventure_game_sp"
+SOURCE_CODE_URL = "https://github.com/djesmond1015/the_whispering_woods"

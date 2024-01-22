@@ -64,7 +64,8 @@ git clone https://github.com/djesmond1015/the_whispering_woods.git
 <br>
 
 2. Create a virtual environment (optional)
-   We strongly recommend you to run the game in a virtual environment. You can create a virtual environment by typing the following command in the terminal.
+
+We strongly recommend you to run the game in a virtual environment. You can create a virtual environment by typing the following command in the terminal.
 
 ```bash
 python -m venv venv
@@ -89,7 +90,8 @@ venv\Scripts\activate
 <br>
 
 3. Install the dependencies using pip
-   We assume that you have Python 3.6 or higher installed on your system. If not, please install it first.
+
+We assume that you have Python 3.6 or higher installed on your system. If not, please install it first.
 
 ```bash
 pip install -r requirements.txt
@@ -98,7 +100,8 @@ pip install -r requirements.txt
 <br>
 
 4. Run the application
-   Once the installation is complete, you can run the game by typing the following command in the terminal.
+
+Once the installation is complete, you can run the game by typing the following command in the terminal.
 
 ```bash
 python -u src/main.py
@@ -146,7 +149,7 @@ If you would like to export the dataset of the game flow as shown in the [Game F
 
 <br>
 
-Alternatively, you can find the game flow dataset in the dataset.py in the src folder. Please click [here](src/dataset.py#L57)
+Alternatively, you can find the game flow dataset in the dataset.py in the src folder. Please click [here](src/dataset.py#L57).
 
 <br>
 
