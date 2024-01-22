@@ -2,7 +2,9 @@
 
 > A text-based adventure game written in Python
 
+<br>
 ![Game Preview](docs/static/game_preview_screen.png)
+<br>
 
 ## Table of Contents
 
@@ -53,6 +55,7 @@ What make the game unique are the following features:
 git clone https://github.com/djesmond1015/the_whispering_woods.git
 ```
 
+<br>
 2. Create a virtual environment (optional)
    We strongly recommend you to run the game in a virtual environment. You can create a virtual environment by typing the following command in the terminal.
 
@@ -74,6 +77,7 @@ If you are using Windows, type the following command in the terminal.
 venv\Scripts\activate
 ```
 
+<br>
 3. Install the dependencies using pip
    We assume that you have Python 3.6 or higher installed on your system. If not, please install it first.
 
@@ -101,12 +105,12 @@ Pro tip: Open the flow chart in a new tab to view it in full size.
 ### Game Main Menu
 
 When you first run the game, you will be greeted with the Main Menu:
-[![Game Main Menu](docs/static/main_menu.png)]
+![Game Main Menu](docs/static/main_menu.png)
 
 ### Game Load
 
 This is the place where you can load your saved game and resume your fantastic odyssey. Only uncompleted games will be shown. The latest start game will be shown at the top of the list.
-[![Game Load](docs/static/game_load.png)]
+![Game Load](docs/static/game_load.png)
 
 ### Game Statistics
 
@@ -115,8 +119,8 @@ This is the place where you can view your game statistics. Only completed games 
 
 ### Game Export
 
-If you would like to export the dataset of the game flow as shown in the [Game Flow](#game-flow) section, you can do so by navigating to the About page and choosing the Export option. We support exporting the dataset in **JSON** and **TXT** formats.
-[![Game Export](docs/static/game_export.png)]
+If you would like to export the dataset of the game flow as shown in the [Game Flow](#game-flow) section, you can do so by navigating to the About page and choosing the Export option. We support exporting the dataset in **JSON** and ==TXT== formats.
+![Game Export](docs/static/game_export.png)
 
 ## Acknowledgements
 
