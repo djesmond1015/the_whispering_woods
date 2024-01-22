@@ -2,8 +2,6 @@
 
 > A text-based adventure game written in Python
 
-[![GitHub stars](https://img.shields.io/github/stars/djesmond1015/the_whispering_woods?style=social)]
-
 ![Game Preview](docs/static/game_preview_screen.png)
 
 ## Table of Contents
@@ -12,8 +10,14 @@
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Prerequisites \& Installation Instructions](#prerequisites--installation-instructions)
-    - [Approach 1: Install using pip](#approach-1-install-using-pip)
-    - [Approach 2: Install standalone executable file](#approach-2-install-standalone-executable-file)
+    - [Approach 1: Install standalone executable file](#approach-1-install-standalone-executable-file)
+    - [Approach 2: Install using pip](#approach-2-install-using-pip)
+  - [GamePlay](#gameplay)
+    - [Game Flow](#game-flow)
+    - [Game Main Menu](#game-main-menu)
+    - [Game Load](#game-load)
+    - [Game Statistics](#game-statistics)
+    - [Game Export](#game-export)
   - [Acknowledgements](#acknowledgements)
   - [Author](#author)
   - [Contact](#contact)
@@ -35,7 +39,13 @@ What make the game unique are the following features:
 
 ## Prerequisites & Installation Instructions
 
-### Approach 1: Install using pip
+### Approach 1: Install standalone executable file
+
+1. Download the executable file [here](https://github.com/djesmond1015/the_whispering_woods/blob/main/theWhisperingForest.zip)
+2. Run the executable file
+3. Enjoy the game
+
+### Approach 2: Install using pip
 
 1. Git clone the repository or download the zip file
 
@@ -43,25 +53,70 @@ What make the game unique are the following features:
 git clone https://github.com/djesmond1015/the_whispering_woods.git
 ```
 
-2. Install the game using pip
+2. Create a virtual environment (optional)
+   We strongly recommend you to run the game in a virtual environment. You can create a virtual environment by typing the following command in the terminal.
+
+```bash
+python -m venv venv
+```
+
+Activate the virtual environment by typing the following command in the terminal.
+
+If you are using Linux or macOS, type the following command in the terminal.
+
+```bash
+source venv/bin/activate
+```
+
+If you are using Windows, type the following command in the terminal.
+
+```command prompt
+venv\Scripts\activate
+```
+
+3. Install the dependencies using pip
    We assume that you have Python 3.6 or higher installed on your system. If not, please install it first.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the application
+4. Run the application
    Once the installation is complete, you can run the game by typing the following command in the terminal.
 
 ```bash
-python -m src/main.py
+python -u src/main.py
 ```
 
-### Approach 2: Install standalone executable file
+## GamePlay
 
-1. Download the executable file here [link](https://github.com/djesmond1015/the_whispering_woods/blob/main/theWhisperingForest.zip)
-2. Run the executable file
-3. Enjoy the game
+### Game Flow
+
+The game flow of The Whispering Forest is non-linear(multiple options) and is designed to be played multiple times with the same ending for each game.
+
+You can find the game flow chart in Simple form [here](docs/static/game_flow_simple.png) and Detailed form [here](docs/static/game_flow_detailed.png).
+
+Pro tip: Open the flow chart in a new tab to view it in full size.
+
+### Game Main Menu
+
+When you first run the game, you will be greeted with the Main Menu:
+[![Game Main Menu](docs/static/main_menu.png)]
+
+### Game Load
+
+This is the place where you can load your saved game and resume your fantastic odyssey. Only uncompleted games will be shown. The latest start game will be shown at the top of the list.
+[![Game Load](docs/static/game_load.png)]
+
+### Game Statistics
+
+This is the place where you can view your game statistics. Only completed games will be shown.
+[![Game Statistics](docs/static/game_statistics.png)]
+
+### Game Export
+
+If you would like to export the dataset of the game flow as shown in the [Game Flow](#game-flow) section, you can do so by navigating to the About page and choosing the Export option. We support exporting the dataset in **JSON** and **TXT** formats.
+[![Game Export](docs/static/game_export.png)]
 
 ## Acknowledgements
 
