@@ -7,7 +7,6 @@
 ![Game Preview](docs/static/game_preview_screen.png)
 
 <br>
-<br>
 
 ## Table of Contents
 
@@ -50,7 +49,7 @@ What make the game unique are the following features:
 
 ### Approach 1: Install standalone executable file
 
-1. Download the executable file [here](https://github.com/djesmond1015/the_whispering_woods/blob/main/theWhisperingForest.zip)
+1. Download the executable file (.exe)[here](https://github.com/djesmond1015/the_whispering_woods/blob/main/theWhisperingForest.zip)
 2. Run the executable file
 3. Enjoy the game
 
@@ -65,6 +64,7 @@ git clone https://github.com/djesmond1015/the_whispering_woods.git
 ```
 
 <br>
+
 2. Create a virtual environment (optional)
    We strongly recommend you to run the game in a virtual environment. You can create a virtual environment by typing the following command in the terminal.
 
@@ -89,6 +89,7 @@ venv\Scripts\activate
 ```
 
 <br>
+
 3. Install the dependencies using pip
    We assume that you have Python 3.6 or higher installed on your system. If not, please install it first.
 
@@ -147,6 +148,10 @@ If you would like to export the dataset of the game flow as shown in the [Game F
 
 <br>
 
+Alternatively, you can find the game flow dataset in the dataset.py in the src folder. Please click [here](src/dataset.py#L57)
+
+<br>
+
 ## Acknowledgements
 
 1. [Grumpy Gamer - Puzzle Dependency Charts](https://grumpygamer.com/puzzle_dependency_charts)
@@ -158,6 +163,7 @@ If you would like to export the dataset of the game flow as shown in the [Game F
 ## Author
 
 Made with ❤️ by Desmond Lee & Robin Chew
+
 <br>
 
 ## Contact
