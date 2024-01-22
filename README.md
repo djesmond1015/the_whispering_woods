@@ -6,8 +6,6 @@
 
 ![Game Preview](docs/static/game_preview_screen.png)
 
-<br>
-
 ## Table of Contents
 
 - [The Whispering Forest](#the-whispering-forest)
