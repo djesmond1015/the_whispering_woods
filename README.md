@@ -4,7 +4,7 @@
 
 <br>
 
-![Game Preview](docs/static/svg/game_preview_screen.svg)
+![Game Preview](docs/static/png/game_preview_screen.png)
 
 ## Table of Contents
 
@@ -124,28 +124,28 @@ You can find the game flow chart in Simple Form [here](docs/static/svg/game_flow
 ### Game Main Menu
 
 When you first run the game, you will be greeted with the Main Menu:
-![Game Main Menu](docs/static/svg/main_menu.svg)
+![Game Main Menu](docs/static/png/main_menu.png)
 
 <br>
 
 ### Game Load
 
 This is the place where you can load your saved game and resume your fantastic odyssey. Only uncompleted games will be shown. The latest start game will be shown at the top of the list.
-![Game Load](docs/static/svg/game_load.svg)
+![Game Load](docs/static/png/game_load.png)
 
 <br>
 
 ### Game Statistics
 
 This is the place where you can view your game statistics. Only completed games will be shown.
-![Game Statistics](docs/static/svg/game_statistics.svg)
+![Game Statistics](docs/static/png/game_statistics.png)
 
 <br>
 
 ### Game Export
 
 If you would like to export the dataset of the game flow as shown in the [Game Flow](#game-flow) section, you can do so by navigating to the About page and choosing the Export option. We support exporting the dataset in **JSON** and **TXT** formats.
-![Game Export](docs/static/svg/game_export.svg)
+![Game Export](docs/static/png/game_export.png)
 
 <br>
 
