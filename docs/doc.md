@@ -1,5 +1,7 @@
 # Documentation
 
+This documentation is for the game developer. If you are a user, please refer to the [README.md](../README.md) file.
+
 ## Table of Contents
 
 - [Documentation](#documentation)
@@ -7,7 +9,7 @@
   - [Customize the game flow](#customize-the-game-flow)
     - [Data structure of a scene](#data-structure-of-a-scene)
     - [Explanation of the scene data structure](#explanation-of-the-scene-data-structure)
-    - [Cases of the scene:](#cases-of-the-scene)
+    - [Cases of the scene](#cases-of-the-scene)
     - [Configure scene based on the cases](#configure-scene-based-on-the-cases)
 
 <br>
@@ -51,8 +53,9 @@
    3. `SceneText.CHOICES`: The choices text of the scene. This is a list of strings.
 3. `choice`: The choices of the scene following the format of `{"choice_number": "choice_text"}`, where `choice_number` is used as the key to identify the choice and `choice_text` is the text of the choice. For instance, based on the above example, the user will be directed to `Continue ahead` scene if the user chooses `1` and `Try to find a way out` scene if the user chooses `2`.
 4. `continue`: A tuple of `(isContinue, next_scene_name)`. `isContinue` is a boolean value that determine the behavior of the game.`next_scene_name` is the name of the next scene. It should be the same as the `name` of the next scene.
-   If `isContinue` is `False`, the game is non-linear, allowing the user to choose the next scene.
-   If `isContinue` is `True`, the game is linear, either the game will continue to the next scene or the game will end.
+
+- If `isContinue` is `False`, the game is non-linear, allowing the user to choose the next scene.
+- If `isContinue` is `True`, the game is linear, either the game will continue to the next scene or the game will end.
 
 ```python
 (True, "next_scene_name") # No choices scene
@@ -61,7 +64,7 @@
 
 <br>
 
-### Cases of the scene:
+### Cases of the scene
 
 There are 3 cases of the scene:
 
