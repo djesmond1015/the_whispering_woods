@@ -26,6 +26,8 @@
 
 <br>
 
+If you are developer, please refer to [here](docs/doc.md).
+
 ## Introduction
 
 The Whispering Forest is a text-based adventure game that is inspired by the classic text-based adventure games of the 1980s. The game is set in a fantasy world where the player must navigate through a woods to find a way to escape. The game is written in Python and is designed to be played in the terminal.
