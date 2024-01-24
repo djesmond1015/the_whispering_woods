@@ -39,7 +39,9 @@ What make the game unique are the following features:
 3. ChatGPT-like typewriter effect of text
 4. Save and load game state
 5. Game statistics of the completed game
-6. Export dataset feature
+6. Export game story and customize the game flow
+
+For more information about customizing the game flow, please refer to [here](/docs/doc.md).
 
 <br>
 
