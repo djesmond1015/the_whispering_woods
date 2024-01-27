@@ -9,6 +9,9 @@
 # Phones: +6016-3092896 | +6011-17764023
 # *********************************************************
 
+# Note: You may refer to the link below for the installation guide of the required packages:
+# https://github.com/djesmond1015/the_whispering_woods?tab=readme-ov-file#prerequisites--installation-instructions
+
 
 # This is the main file that will be executed to start the game
 from configurations import handle_config, handle_config_dev
