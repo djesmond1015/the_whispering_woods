@@ -80,26 +80,6 @@ class GameStateController:
         except Exception as e:
             self._handle_exception("RETRIEVE_MULTIPLE_ERROR", e)
 
-        def delete_all_load_games(self, player_list):
-            try:
-                # Filter all the completed games.
-                filtered_data = list(
-                    filter(
-                        lambda x: x["player_name"]
-                        not in [player["player_name"] for player in player_list]
-                        and x["player_id"]
-                        not in [player["player_name"] for player in player_list],
-                        self.data,
-                    )
-                )
-
-                self.reset_game()
-
-                gsa.save_game_state(filtered_data)
-
-            except Exception as e:
-                self._handle_exception("DELETE_USER_ERROR", e)
-
     def delete_all_load_games(self, player_list):
         try:
             # Filter all the completed games.
